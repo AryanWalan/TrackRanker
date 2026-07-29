@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="TrackRanker.Api/TrackRanker.Api.csproj" />
+  <Project Path="TrackRanker.Api.Tests/TrackRanker.Api.Tests.csproj" />
+</Solution>
