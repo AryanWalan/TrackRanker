@@ -31,7 +31,7 @@ describe("TrackRanker application", () => {
 
     await user.click(screen.getByRole("link", { name: "Sessions" }));
 
-    expect(screen.getByRole("heading", { name: "Sessions" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Training Sessions" })).toBeInTheDocument();
   });
 
   it("shows a successful mocked backend connection", async () => {

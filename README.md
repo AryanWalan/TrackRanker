@@ -10,7 +10,9 @@ Competitive sprint athletes working with a coach, initially focused on the 100m,
 
 ## Current milestone
 
-Milestone 1 provides a runnable, tested full-stack scaffold: a React application shell, a .NET health API, MongoDB dependency injection, local database infrastructure, and project documentation. Training features, profiles, authentication, confidence tracking, and gamification are not implemented yet.
+Milestone 2 implements end-to-end training session CRUD. Athletes can create, list, view, edit, and delete prescribed sprint sessions, including their purpose, focus cue, success criteria, intended intensity, coach notes, and status. Data is persisted in MongoDB through the .NET API.
+
+Authentication, athlete profiles, confidence tracking, completed repetition results, analytics, and gamification are not implemented yet.
 
 ## Technology stack
 
@@ -24,6 +26,11 @@ Milestone 1 provides a runnable, tested full-stack scaffold: a React application
 ```text
 backend/
   TrackRanker.Api/
+    Controllers/
+    DTOs/
+    Models/
+    Repositories/
+    Services/
   TrackRanker.Api.Tests/
   TrackRanker.slnx
 frontend/
@@ -59,7 +66,7 @@ dotnet restore TrackRanker.slnx
 dotnet run --project TrackRanker.Api
 ```
 
-The development API runs at `http://localhost:5000` by default. Its health endpoint is `http://localhost:5000/api/health`.
+The development API runs at `http://localhost:5000` by default. Its health endpoint is `http://localhost:5000/api/health`, and training sessions are available under `http://localhost:5000/api/training-sessions`.
 
 Scalar API documentation is available in development at `http://localhost:5000/scalar/v1`.
 
@@ -86,7 +93,7 @@ npm test
 npm run build
 ```
 
-Frontend tests mock backend calls and do not require a running API.
+Backend service tests use a fake repository, and frontend tests mock API calls. Neither automated suite requires a live MongoDB instance.
 
 ## Environment variables
 

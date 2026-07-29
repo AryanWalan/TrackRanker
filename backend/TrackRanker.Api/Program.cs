@@ -2,10 +2,15 @@ using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Scalar.AspNetCore;
 using TrackRanker.Api.Configuration;
+using TrackRanker.Api.Repositories;
+using TrackRanker.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.Converters.Add(
+            new System.Text.Json.Serialization.JsonStringEnumConverter()));
 builder.Services.AddOpenApi();
 
 builder.Services
@@ -24,6 +29,8 @@ builder.Services.AddSingleton<IMongoDatabase>(serviceProvider =>
     var options = serviceProvider.GetRequiredService<IOptions<MongoDbOptions>>().Value;
     return serviceProvider.GetRequiredService<IMongoClient>().GetDatabase(options.DatabaseName);
 });
+builder.Services.AddScoped<ITrainingSessionRepository, MongoTrainingSessionRepository>();
+builder.Services.AddScoped<ITrainingSessionService, TrainingSessionService>();
 
 var allowedOrigin = builder.Configuration["Frontend:AllowedOrigin"];
 if (string.IsNullOrWhiteSpace(allowedOrigin))

@@ -38,4 +38,4 @@ The intended first product version will focus on prescribed sprint sessions, com
 - Nutrition plans, payment processing, and team administration
 - Predictive injury or performance claims
 
-Milestone 1 implements only the technical scaffold and health connectivity, not the product features above.
+Milestone 2 implements the first bounded product capability: CRUD for prescribed training sessions and their intended purpose. Repetition results, reflection, confidence, and gamification remain deferred.
