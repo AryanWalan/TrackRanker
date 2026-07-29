@@ -10,11 +10,9 @@ Competitive sprint athletes working with a coach, initially focused on the 100m,
 
 ## Current milestone
 
-Milestone 4 streamlines training-session creation and editing through progressive disclosure. Athletes can quickly log the session type, date, prescription, and planned intensity, while optional clarity fields stay available in an expandable section with conservative, editable TrackRanker templates. Blank titles are generated predictably from the session type and prescription.
+Milestone 5 adds an evidence-based Confidence History page. It derives summary metrics, a before/after confidence chart, and chronological reflection evidence from stored session completions, with supported session-type filtering and links back to source sessions.
 
-Completed-session results and reflection remain available alongside the streamlined planned-session workflow.
-
-Authentication, athlete profiles, confidence analytics or trends, dashboard analytics, and gamification are not implemented yet.
+Streamlined planned-session entry and completed-session reflection remain available. Authentication, athlete profiles, advanced dashboard analytics, AI-generated encouragement, and gamification are not implemented yet.
 
 ## Technology stack
 
@@ -68,7 +66,7 @@ dotnet restore TrackRanker.slnx
 dotnet run --project TrackRanker.Api
 ```
 
-The development API runs at `http://localhost:5000` by default. Its health endpoint is `http://localhost:5000/api/health`, training sessions are available under `http://localhost:5000/api/training-sessions`, and a session's completed outcome is available under `/api/training-sessions/{sessionId}/completion`.
+The development API runs at `http://localhost:5000` by default. Its health endpoint is `http://localhost:5000/api/health`, training sessions are available under `http://localhost:5000/api/training-sessions`, a session's completed outcome is available under `/api/training-sessions/{sessionId}/completion`, and derived evidence is available at `/api/confidence/history`.
 
 Scalar API documentation is available in development at `http://localhost:5000/scalar/v1`.
 
@@ -95,7 +93,7 @@ npm test
 npm run build
 ```
 
-Backend service tests use fake repositories, and frontend tests mock API calls. Neither automated suite requires a live MongoDB instance. Form tests cover quick logging, progressive disclosure, preset safety, title generation, and existing edit behaviour.
+Backend service tests use fake repositories, and frontend tests mock API calls. Neither automated suite requires a live MongoDB instance. Tests cover session workflows plus confidence-history inclusion, calculations, ordering, states, filtering, chart data, and source links.
 
 ## Environment variables
 

@@ -5,6 +5,7 @@ import type {
   SessionCompletion,
   UpdateSessionCompletionRequest,
 } from "../types/sessionCompletion";
+import type { ConfidenceHistory } from "../types/confidenceHistory";
 
 export class ApiError extends Error {
   constructor(
@@ -122,4 +123,8 @@ export function deleteSessionCompletion(sessionId: string): Promise<void> {
     `/api/training-sessions/${encodeURIComponent(sessionId)}/completion`,
     { method: "DELETE" },
   );
+}
+
+export function getConfidenceHistory(): Promise<ConfidenceHistory> {
+  return request<ConfidenceHistory>("/api/confidence/history");
 }

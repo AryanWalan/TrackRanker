@@ -298,6 +298,12 @@ public sealed class SessionCompletionServiceTests
 
         public List<SessionCompletion> Items { get; } = [];
 
+        public Task<IReadOnlyList<SessionCompletion>> GetAllAsync(
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyList<SessionCompletion>>(Items);
+        }
+
         public Task<SessionCompletion?> GetByTrainingSessionIdAsync(
             string trainingSessionId,
             CancellationToken cancellationToken = default)

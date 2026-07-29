@@ -2,11 +2,11 @@
 
 ## Frontend architecture
 
-The frontend is a React and TypeScript single-page application built with Vite. React Router owns route composition, while a responsive application shell provides shared navigation and layout. Training-session list, create, detail, and edit pages share a focused form component. A reusable completion form supports ratings, dynamic repetition results, reflection, and confidence capture on `/sessions/:id/complete`. Pages use a typed API service rather than calling `fetch` directly. Page, component, type, configuration, and API concerns are kept in focused modules. Vitest, jsdom, and React Testing Library test observable user behaviour.
+The frontend is a React and TypeScript single-page application built with Vite. React Router owns route composition, while a responsive application shell provides shared navigation and layout. Training-session list, create, detail, and edit pages share a focused form component. A reusable completion form supports ratings, dynamic repetition results, reflection, and confidence capture on `/sessions/:id/complete`. `/confidence` loads a typed confidence-history read response, renders a dependency-free accessible SVG, and filters evidence client-side. Pages use a typed API service rather than calling `fetch` directly. Page, component, type, configuration, and API concerns are kept in focused modules. Vitest, jsdom, and React Testing Library test observable user behaviour.
 
 ## Backend architecture
 
-The backend is a .NET 10 ASP.NET Core Web API using controllers. Startup composition remains in `Program.cs`. Training-session and session-completion controllers depend on application services, which validate and map separate request/response DTOs to internal persistence models. Services depend on repository abstractions, and only MongoDB repositories contain database queries. Completion creation checks the parent through the existing training-session repository and marks that session Completed after storing the outcome. Built-in OpenAPI generation supplies a document rendered through Scalar during development.
+The backend is a .NET 10 ASP.NET Core Web API using controllers. Startup composition remains in `Program.cs`. Training-session and session-completion controllers depend on application services, which validate and map separate request/response DTOs to internal persistence models. The read-only confidence controller calls a dedicated service that loads completions and sessions through their existing repositories, filters meaningful evidence, joins parent context, calculates nullable summaries, and returns confidence DTOs newest-first. Services depend on repository abstractions, and only MongoDB repositories contain database queries. Completion creation checks the parent through the existing training-session repository and marks that session Completed after storing the outcome. Built-in OpenAPI generation supplies a document rendered through Scalar during development.
 
 ## MongoDB approach
 
@@ -31,4 +31,7 @@ flowchart LR
     API -->|"planned CRUD"| Sessions[("trainingSessions")]
     API -->|"outcome + reflection"| Completions[("sessionCompletions")]
     Completions -. "TrainingSessionId" .-> Sessions
+    API -->|"GET confidence history"| Confidence["ConfidenceHistoryService"]
+    Confidence -->|"read + join"| Sessions
+    Confidence -->|"read evidence"| Completions
 ```

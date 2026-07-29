@@ -15,6 +15,15 @@ public sealed class MongoSessionCompletionRepository : ISessionCompletionReposit
         _indexTask = new Lazy<Task>(CreateIndexesAsync);
     }
 
+    public async Task<IReadOnlyList<SessionCompletion>> GetAllAsync(
+        CancellationToken cancellationToken = default)
+    {
+        await EnsureIndexesAsync();
+        return await _completions
+            .Find(FilterDefinition<SessionCompletion>.Empty)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<SessionCompletion?> GetByTrainingSessionIdAsync(
         string trainingSessionId,
         CancellationToken cancellationToken = default)
