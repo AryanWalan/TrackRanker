@@ -39,8 +39,11 @@ public sealed class TrainingSessionService : ITrainingSessionService
         var session = new TrainingSession
         {
             Id = ObjectId.GenerateNewId().ToString(),
-            Title = request.Title.Trim(),
-            SessionType = request.SessionType,
+            Title = ResolveTitle(
+                request.Title,
+                request.SessionType!.Value,
+                request.Prescription),
+            SessionType = request.SessionType.Value,
             SessionDate = request.SessionDate!.Value.ToDateTime(
                 TimeOnly.MinValue,
                 DateTimeKind.Utc),
@@ -71,8 +74,11 @@ public sealed class TrainingSessionService : ITrainingSessionService
             return null;
         }
 
-        session.Title = request.Title.Trim();
-        session.SessionType = request.SessionType;
+        session.Title = ResolveTitle(
+            request.Title,
+            request.SessionType!.Value,
+            request.Prescription);
+        session.SessionType = request.SessionType.Value;
         session.SessionDate = request.SessionDate!.Value.ToDateTime(
             TimeOnly.MinValue,
             DateTimeKind.Utc);
@@ -107,6 +113,26 @@ public sealed class TrainingSessionService : ITrainingSessionService
     {
         var trimmed = value?.Trim();
         return string.IsNullOrEmpty(trimmed) ? null : trimmed;
+    }
+
+    private static string ResolveTitle(
+        string? title,
+        SessionType sessionType,
+        string prescription)
+    {
+        if (!string.IsNullOrWhiteSpace(title))
+        {
+            return title.Trim();
+        }
+
+        var typeName = System.Text.RegularExpressions.Regex.Replace(
+            sessionType.ToString(),
+            "([a-z])([A-Z])",
+            "$1 $2");
+        var generated = $"{typeName} — {prescription.Trim()}";
+        return generated.Length <= 100
+            ? generated
+            : $"{generated[..99].TrimEnd()}…";
     }
 
     private static TrainingSessionResponse ToResponse(TrainingSession session)

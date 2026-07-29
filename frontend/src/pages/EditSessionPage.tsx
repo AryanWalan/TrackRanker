@@ -56,7 +56,7 @@ export function EditSessionPage() {
       </div>
       <SessionForm
         initialValue={initialValue}
-        submitLabel="Save Changes"
+        submitLabel="Save changes"
         cancelTo={`/sessions/${id}`}
         onSubmit={async (input) => {
           await updateTrainingSession(id, input);

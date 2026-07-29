@@ -20,6 +20,7 @@ TrackRanker will give athletes a clear, supportive place to understand prescribe
 
 - Support, never undermine, the coach-athlete relationship.
 - Make training purpose and progress understandable.
+- Keep essential workout logging fast, with deeper clarity available when useful.
 - Reward healthy process and consistency rather than dangerous overtraining.
 - Keep reflection quick, respectful, and useful.
 - Never diagnose injury or encourage an athlete to train through pain.
@@ -38,4 +39,4 @@ The intended first product version will focus on prescribed sprint sessions, com
 - Nutrition plans, payment processing, and team administration
 - Predictive injury or performance claims
 
-Milestone 3 implements prescribed training session CRUD plus completed-session outcomes, optional repetition results, post-session reflection, coach feedback, and confidence capture before and after a session. Confidence analytics, trends, dashboards, and gamification remain deferred.
+Milestone 4 retains prescribed training and reflection capabilities while making planned-session entry progressive: essentials first, optional clarity on demand, and editable static clarity suggestions. Confidence analytics, trends, dashboards, and gamification remain deferred.

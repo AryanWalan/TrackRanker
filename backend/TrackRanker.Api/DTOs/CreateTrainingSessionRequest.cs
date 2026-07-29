@@ -5,12 +5,12 @@ namespace TrackRanker.Api.DTOs;
 
 public sealed class CreateTrainingSessionRequest
 {
-    [Required]
     [StringLength(100)]
-    public string Title { get; init; } = string.Empty;
+    public string? Title { get; init; }
 
+    [Required]
     [EnumDataType(typeof(SessionType))]
-    public SessionType SessionType { get; init; }
+    public SessionType? SessionType { get; init; }
 
     [Required]
     public DateOnly? SessionDate { get; init; }
@@ -28,6 +28,7 @@ public sealed class CreateTrainingSessionRequest
     [StringLength(500)]
     public string? SuccessCriteria { get; init; }
 
+    [Required]
     [Range(0, 100)]
     public int? IntendedIntensity { get; init; }
 

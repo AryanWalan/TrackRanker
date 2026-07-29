@@ -74,6 +74,13 @@ export function SessionDetailPage() {
     return <p className="state-panel" role="status">Loading session…</p>;
   }
 
+  const hasPlannedClarity = Boolean(
+    session.purpose
+    || session.focusCue
+    || session.successCriteria
+    || session.coachNotes,
+  );
+
   return (
     <article className="session-detail">
       <Link className="back-link" to="/sessions">← Back to Sessions</Link>
@@ -98,10 +105,27 @@ export function SessionDetailPage() {
 
       <div className="clarity-grid">
         <DetailSection title="Prescription" value={session.prescription} />
-        <DetailSection title="Why you're doing it" value={session.purpose} />
-        <DetailSection title="Focus" value={session.focusCue} />
-        <DetailSection title="What success looks like" value={session.successCriteria} />
-        <DetailSection title="Coach notes" value={session.coachNotes} />
+        {session.purpose && (
+          <DetailSection title="Why you're doing it" value={session.purpose} />
+        )}
+        {session.focusCue && <DetailSection title="Focus" value={session.focusCue} />}
+        {session.successCriteria && (
+          <DetailSection title="What success looks like" value={session.successCriteria} />
+        )}
+        {session.coachNotes && (
+          <DetailSection title="Coach notes" value={session.coachNotes} />
+        )}
+        {!hasPlannedClarity && (
+          <section className="clarity-empty">
+            <div>
+              <h2>Want more clarity?</h2>
+              <p>Add a purpose, focus cue, or success criteria when it would help.</p>
+            </div>
+            <Link className="button secondary" to={`/sessions/${id}/edit`}>
+              Add session clarity
+            </Link>
+          </section>
+        )}
       </div>
 
       <section className="completed-session" aria-labelledby="completed-session-title">

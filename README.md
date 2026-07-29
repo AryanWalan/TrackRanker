@@ -10,7 +10,9 @@ Competitive sprint athletes working with a coach, initially focused on the 100m,
 
 ## Current milestone
 
-Milestone 3 implements completed-session results and post-session reflection alongside end-to-end training session CRUD. Athletes can keep the planned prescription separate from the actual outcome, record optional repetition results, rate actual intensity and perceived difficulty, capture reflection and coach feedback, and store confidence before and after the session.
+Milestone 4 streamlines training-session creation and editing through progressive disclosure. Athletes can quickly log the session type, date, prescription, and planned intensity, while optional clarity fields stay available in an expandable section with conservative, editable TrackRanker templates. Blank titles are generated predictably from the session type and prescription.
+
+Completed-session results and reflection remain available alongside the streamlined planned-session workflow.
 
 Authentication, athlete profiles, confidence analytics or trends, dashboard analytics, and gamification are not implemented yet.
 
@@ -93,7 +95,7 @@ npm test
 npm run build
 ```
 
-Backend service tests use fake repositories, and frontend tests mock API calls. Neither automated suite requires a live MongoDB instance.
+Backend service tests use fake repositories, and frontend tests mock API calls. Neither automated suite requires a live MongoDB instance. Form tests cover quick logging, progressive disclosure, preset safety, title generation, and existing edit behaviour.
 
 ## Environment variables
 

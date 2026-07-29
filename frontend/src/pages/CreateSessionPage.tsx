@@ -15,7 +15,7 @@ export function CreateSessionPage() {
         </div>
       </div>
       <SessionForm
-        submitLabel="Create Session"
+        submitLabel="Create session"
         cancelTo="/sessions"
         onSubmit={async (input) => {
           const session = await createTrainingSession(input);
