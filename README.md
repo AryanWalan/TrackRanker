@@ -10,9 +10,9 @@ Competitive sprint athletes working with a coach, initially focused on the 100m,
 
 ## Current milestone
 
-Milestone 2 implements end-to-end training session CRUD. Athletes can create, list, view, edit, and delete prescribed sprint sessions, including their purpose, focus cue, success criteria, intended intensity, coach notes, and status. Data is persisted in MongoDB through the .NET API.
+Milestone 3 implements completed-session results and post-session reflection alongside end-to-end training session CRUD. Athletes can keep the planned prescription separate from the actual outcome, record optional repetition results, rate actual intensity and perceived difficulty, capture reflection and coach feedback, and store confidence before and after the session.
 
-Authentication, athlete profiles, confidence tracking, completed repetition results, analytics, and gamification are not implemented yet.
+Authentication, athlete profiles, confidence analytics or trends, dashboard analytics, and gamification are not implemented yet.
 
 ## Technology stack
 
@@ -66,7 +66,7 @@ dotnet restore TrackRanker.slnx
 dotnet run --project TrackRanker.Api
 ```
 
-The development API runs at `http://localhost:5000` by default. Its health endpoint is `http://localhost:5000/api/health`, and training sessions are available under `http://localhost:5000/api/training-sessions`.
+The development API runs at `http://localhost:5000` by default. Its health endpoint is `http://localhost:5000/api/health`, training sessions are available under `http://localhost:5000/api/training-sessions`, and a session's completed outcome is available under `/api/training-sessions/{sessionId}/completion`.
 
 Scalar API documentation is available in development at `http://localhost:5000/scalar/v1`.
 
@@ -93,7 +93,7 @@ npm test
 npm run build
 ```
 
-Backend service tests use a fake repository, and frontend tests mock API calls. Neither automated suite requires a live MongoDB instance.
+Backend service tests use fake repositories, and frontend tests mock API calls. Neither automated suite requires a live MongoDB instance.
 
 ## Environment variables
 

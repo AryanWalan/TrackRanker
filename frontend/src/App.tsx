@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
 import { ConfidencePage } from "./pages/ConfidencePage";
+import { CompleteSessionPage } from "./pages/CompleteSessionPage";
 import { CreateSessionPage } from "./pages/CreateSessionPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { EditSessionPage } from "./pages/EditSessionPage";
@@ -17,6 +18,7 @@ export default function App() {
         <Route path="sessions/new" element={<CreateSessionPage />} />
         <Route path="sessions/:id" element={<SessionDetailPage />} />
         <Route path="sessions/:id/edit" element={<EditSessionPage />} />
+        <Route path="sessions/:id/complete" element={<CompleteSessionPage />} />
         <Route path="confidence" element={<ConfidencePage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="/" replace />} />

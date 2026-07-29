@@ -296,6 +296,13 @@ h2 {
   border-color: #efb5a8;
 }
 
+.button.quiet-danger {
+  align-self: end;
+  color: #8a2718;
+  background: transparent;
+  border-color: #efb5a8;
+}
+
 .state-panel {
   padding: clamp(2rem, 6vw, 4rem);
   background: var(--surface);
@@ -549,6 +556,190 @@ h2 {
   margin: 0;
 }
 
+.completed-session {
+  margin-top: 2.5rem;
+  padding: clamp(1.25rem, 4vw, 2.5rem);
+  background: #eef1eb;
+  border-top: 5px solid #53662b;
+}
+
+.completed-session-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.completed-session-heading h2 {
+  margin: 0;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+}
+
+.completion-empty {
+  padding: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.completion-ratings,
+.confidence-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0 0 1rem;
+  padding: 1px;
+  background: var(--line);
+}
+
+.completion-ratings div,
+.confidence-summary div {
+  padding: 1.1rem;
+  background: var(--surface);
+}
+
+.completion-ratings dt,
+.confidence-summary dt {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.completion-ratings dd,
+.confidence-summary dd {
+  margin: 0.4rem 0 0;
+  font-size: 1.05rem;
+  font-weight: 750;
+}
+
+.completion-block {
+  margin: 1rem 0;
+  padding: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.completion-block h3 {
+  margin-top: 0;
+}
+
+.result-table-wrap {
+  overflow-x: auto;
+}
+
+.result-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.result-table th,
+.result-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+}
+
+.result-table th {
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.reflection-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.reflection-grid .detail-section {
+  border-color: #cdd3c7;
+}
+
+.reflection-grid .detail-section:first-child {
+  grid-column: auto;
+  border-left: 1px solid #cdd3c7;
+}
+
+.confidence-summary {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 1rem;
+}
+
+.completion-delete-confirm {
+  border-width: 2px;
+}
+
+.completion-form {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.completion-form-section {
+  padding: clamp(1.25rem, 4vw, 2.25rem);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--ink);
+}
+
+.section-heading {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.section-heading h2,
+.section-heading p,
+.step-number {
+  margin: 0;
+}
+
+.section-heading p {
+  margin-top: 0.35rem;
+  color: var(--muted);
+}
+
+.section-heading .step-number {
+  color: var(--track-dark);
+  font-size: 0.78rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+}
+
+.repetition-list {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.repetition-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(6rem, 1fr));
+  gap: 0.9rem;
+  margin: 0;
+  padding: 1rem;
+  background: #f7f8f5;
+  border: 1px solid var(--line);
+}
+
+.repetition-row legend {
+  padding: 0 0.4rem;
+  font-weight: 800;
+}
+
+.repetition-notes {
+  grid-column: span 3;
+}
+
+.completion-actions {
+  padding: 1.25rem;
+  background: var(--ink);
+  border-bottom: 4px solid var(--track);
+}
+
 .confirm-panel p {
   margin-top: 0.3rem;
   color: var(--muted);
@@ -593,18 +784,27 @@ footer p {
 
   .page-heading,
   .detail-header,
-  .confirm-panel {
+  .confirm-panel,
+  .completed-session-heading {
     align-items: stretch;
     flex-direction: column;
   }
 
   .session-list,
   .form-grid,
-  .clarity-grid {
+  .clarity-grid,
+  .reflection-grid,
+  .completion-ratings,
+  .confidence-summary,
+  .repetition-row {
     grid-template-columns: 1fr;
   }
 
   .detail-section:first-child {
+    grid-column: auto;
+  }
+
+  .repetition-notes {
     grid-column: auto;
   }
 }

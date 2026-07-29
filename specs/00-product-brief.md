@@ -38,4 +38,4 @@ The intended first product version will focus on prescribed sprint sessions, com
 - Nutrition plans, payment processing, and team administration
 - Predictive injury or performance claims
 
-Milestone 2 implements the first bounded product capability: CRUD for prescribed training sessions and their intended purpose. Repetition results, reflection, confidence, and gamification remain deferred.
+Milestone 3 implements prescribed training session CRUD plus completed-session outcomes, optional repetition results, post-session reflection, coach feedback, and confidence capture before and after a session. Confidence analytics, trends, dashboards, and gamification remain deferred.

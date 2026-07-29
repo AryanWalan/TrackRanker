@@ -31,6 +31,8 @@ builder.Services.AddSingleton<IMongoDatabase>(serviceProvider =>
 });
 builder.Services.AddScoped<ITrainingSessionRepository, MongoTrainingSessionRepository>();
 builder.Services.AddScoped<ITrainingSessionService, TrainingSessionService>();
+builder.Services.AddSingleton<ISessionCompletionRepository, MongoSessionCompletionRepository>();
+builder.Services.AddScoped<ISessionCompletionService, SessionCompletionService>();
 
 var allowedOrigin = builder.Configuration["Frontend:AllowedOrigin"];
 if (string.IsNullOrWhiteSpace(allowedOrigin))

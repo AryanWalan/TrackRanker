@@ -11,6 +11,10 @@ const api = vi.hoisted(() => ({
   createTrainingSession: vi.fn(),
   updateTrainingSession: vi.fn(),
   deleteTrainingSession: vi.fn(),
+  getSessionCompletion: vi.fn(),
+  createSessionCompletion: vi.fn(),
+  updateSessionCompletion: vi.fn(),
+  deleteSessionCompletion: vi.fn(),
 }));
 
 vi.mock("../services/trainingSessions", () => ({
@@ -49,6 +53,7 @@ describe("training sessions", () => {
     api.createTrainingSession.mockResolvedValue(session);
     api.updateTrainingSession.mockResolvedValue(session);
     api.deleteTrainingSession.mockResolvedValue(undefined);
+    api.getSessionCompletion.mockRejectedValue(new Error("No completion"));
   });
 
   it("renders sessions returned by the API", async () => {

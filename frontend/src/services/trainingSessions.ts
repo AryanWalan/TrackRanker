@@ -1,5 +1,10 @@
 import { API_BASE_URL } from "../config/api";
 import type { TrainingSession, TrainingSessionInput } from "../types/trainingSession";
+import type {
+  CreateSessionCompletionRequest,
+  SessionCompletion,
+  UpdateSessionCompletionRequest,
+} from "../types/sessionCompletion";
 
 export class ApiError extends Error {
   constructor(
@@ -78,4 +83,43 @@ export function deleteTrainingSession(id: string): Promise<void> {
   return request<void>(`/api/training-sessions/${encodeURIComponent(id)}`, {
     method: "DELETE",
   });
+}
+
+export function getSessionCompletion(sessionId: string): Promise<SessionCompletion> {
+  return request<SessionCompletion>(
+    `/api/training-sessions/${encodeURIComponent(sessionId)}/completion`,
+  );
+}
+
+export function createSessionCompletion(
+  sessionId: string,
+  input: CreateSessionCompletionRequest,
+): Promise<SessionCompletion> {
+  return request<SessionCompletion>(
+    `/api/training-sessions/${encodeURIComponent(sessionId)}/completion`,
+    {
+      method: "POST",
+      body: JSON.stringify(input),
+    },
+  );
+}
+
+export function updateSessionCompletion(
+  sessionId: string,
+  input: UpdateSessionCompletionRequest,
+): Promise<SessionCompletion> {
+  return request<SessionCompletion>(
+    `/api/training-sessions/${encodeURIComponent(sessionId)}/completion`,
+    {
+      method: "PUT",
+      body: JSON.stringify(input),
+    },
+  );
+}
+
+export function deleteSessionCompletion(sessionId: string): Promise<void> {
+  return request<void>(
+    `/api/training-sessions/${encodeURIComponent(sessionId)}/completion`,
+    { method: "DELETE" },
+  );
 }
