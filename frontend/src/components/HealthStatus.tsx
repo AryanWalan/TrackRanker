@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { getHealth, type HealthResponse } from "../services/health";
+import { getHealth } from "../services/health";
 
 type HealthState =
   | { kind: "loading" }
-  | { kind: "connected"; health: HealthResponse }
+  | { kind: "connected" }
   | { kind: "error" };
 
 export function HealthStatus() {
@@ -13,7 +13,7 @@ export function HealthStatus() {
     const controller = new AbortController();
 
     getHealth(controller.signal)
-      .then((health) => setState({ kind: "connected", health }))
+      .then(() => setState({ kind: "connected" }))
       .catch((error: unknown) => {
         if (!(error instanceof DOMException && error.name === "AbortError")) {
           setState({ kind: "error" });
@@ -24,20 +24,20 @@ export function HealthStatus() {
   }, []);
 
   if (state.kind === "loading") {
-    return <p className="status loading" role="status">Checking backend connection…</p>;
+    return <p className="status loading" role="status">Checking connection</p>;
   }
 
   if (state.kind === "error") {
     return (
       <p className="status error" role="status">
-        Backend unavailable. Start the API and try again.
+        Connection unavailable
       </p>
     );
   }
 
   return (
     <p className="status connected" role="status">
-      Backend connected: {state.health.application}
+      System connected
     </p>
   );
 }

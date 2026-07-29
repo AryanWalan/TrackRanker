@@ -47,6 +47,6 @@ describe("TrackRanker application", () => {
     );
     renderApp();
 
-    expect(await screen.findByText("Backend connected: TrackRanker.Api")).toBeInTheDocument();
+    expect(await screen.findByText("System connected")).toBeInTheDocument();
   });
 });

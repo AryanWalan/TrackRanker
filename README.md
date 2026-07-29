@@ -10,7 +10,7 @@ Competitive sprint athletes working with a coach, initially focused on the 100m,
 
 ## Current milestone
 
-Milestone 5 adds an evidence-based Confidence History page. It derives summary metrics, a before/after confidence chart, and chronological reflection evidence from stored session completions, with supported session-type filtering and links back to source sessions.
+The Dashboard now provides direct session actions and a three-session recent-training snapshot using the existing training-session API. Milestone 5 also provides an evidence-based Confidence History page derived from stored session completions.
 
 Streamlined planned-session entry and completed-session reflection remain available. Authentication, athlete profiles, advanced dashboard analytics, AI-generated encouragement, and gamification are not implemented yet.
 
