@@ -6,6 +6,7 @@ import type {
   UpdateSessionCompletionRequest,
 } from "../types/sessionCompletion";
 import type { ConfidenceHistory } from "../types/confidenceHistory";
+import type { Progress } from "../types/progress";
 
 export class ApiError extends Error {
   constructor(
@@ -127,4 +128,8 @@ export function deleteSessionCompletion(sessionId: string): Promise<void> {
 
 export function getConfidenceHistory(): Promise<ConfidenceHistory> {
   return request<ConfidenceHistory>("/api/confidence/history");
+}
+
+export function getProgress(): Promise<Progress> {
+  return request<Progress>("/api/progress");
 }

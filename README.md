@@ -10,9 +10,15 @@ Competitive sprint athletes working with a coach, initially focused on the 100m,
 
 ## Current milestone
 
-The Dashboard now provides direct session actions and a three-session recent-training snapshot using the existing training-session API. Milestone 5 also provides an evidence-based Confidence History page derived from stored session completions.
+TrackRanker now includes process-based XP, personal TrackRank levels, and six achievements derived from stored session completions. The Progress page makes the rules and process totals transparent, while the Dashboard includes a small TrackRank summary alongside recent training.
 
-Streamlined planned-session entry and completed-session reflection remain available. Authentication, athlete profiles, advanced dashboard analytics, AI-generated encouragement, and gamification are not implemented yet.
+Streamlined planned-session entry, completed-session reflection, and evidence-based Confidence History remain available. Authentication, athlete profiles, leaderboards, athlete comparison, advanced analytics, and AI-generated encouragement are not implemented.
+
+## TrackRank gamification
+
+TrackRank measures engagement with the athlete's training process, not sprint ability. A stored session completion earns 20 XP, a meaningful reflection adds 10 XP, and paired confidence-before and confidence-after ratings add 5 XP. Every 100 XP increases TrackRank by one. XP, ranks, and achievements are always recalculated from current completion evidence rather than stored as mutable balances.
+
+TrackRanker does not award XP for faster times, higher intensity, additional volume, personal bests, or extra training. There is no leaderboard.
 
 ## Technology stack
 
@@ -66,7 +72,7 @@ dotnet restore TrackRanker.slnx
 dotnet run --project TrackRanker.Api
 ```
 
-The development API runs at `http://localhost:5000` by default. Its health endpoint is `http://localhost:5000/api/health`, training sessions are available under `http://localhost:5000/api/training-sessions`, a session's completed outcome is available under `/api/training-sessions/{sessionId}/completion`, and derived evidence is available at `/api/confidence/history`.
+The development API runs at `http://localhost:5000` by default. Its health endpoint is `http://localhost:5000/api/health`, training sessions are available under `http://localhost:5000/api/training-sessions`, a session's completed outcome is available under `/api/training-sessions/{sessionId}/completion`, confidence evidence is available at `/api/confidence/history`, and derived gamification progress is available at `/api/progress`.
 
 Scalar API documentation is available in development at `http://localhost:5000/scalar/v1`.
 
@@ -93,7 +99,7 @@ npm test
 npm run build
 ```
 
-Backend service tests use fake repositories, and frontend tests mock API calls. Neither automated suite requires a live MongoDB instance. Tests cover session workflows plus confidence-history inclusion, calculations, ordering, states, filtering, chart data, and source links.
+Backend service tests use fake repositories, and frontend tests mock API calls. Neither automated suite requires a live MongoDB instance. Tests cover session workflows, confidence history, and deterministic progress calculations including XP, TrackRank boundaries, and achievements.
 
 ## Environment variables
 
@@ -112,13 +118,9 @@ The planned production shape is a statically hosted frontend, a separately deplo
 
 This repository is being developed through incremental commits, with each milestone kept reviewable and tested.
 
-## Assessed advanced requirements
+## Assessment gamification theme
 
-To be selected and documented in a future milestone:
-
-1. Advanced requirement one — pending.
-2. Advanced requirement two — pending.
-3. Advanced requirement three — pending.
+TrackRank satisfies the gamification theme through transparent, process-based XP, personal levels, progress indicators, and achievements. It deliberately avoids leaderboards and performance rewards so gamification supports prescribed training and reflection rather than excessive work or athlete comparison.
 
 ## AI usage
 

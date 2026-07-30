@@ -34,6 +34,7 @@ builder.Services.AddScoped<ITrainingSessionService, TrainingSessionService>();
 builder.Services.AddSingleton<ISessionCompletionRepository, MongoSessionCompletionRepository>();
 builder.Services.AddScoped<ISessionCompletionService, SessionCompletionService>();
 builder.Services.AddScoped<IConfidenceHistoryService, ConfidenceHistoryService>();
+builder.Services.AddScoped<IProgressService, ProgressService>();
 
 var allowedOrigin = builder.Configuration["Frontend:AllowedOrigin"];
 if (string.IsNullOrWhiteSpace(allowedOrigin))

@@ -269,6 +269,47 @@ h2 {
   border: 1px solid var(--line);
 }
 
+.dashboard-rank {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+  padding: 1.2rem 1.4rem;
+  color: white;
+  background: var(--ink);
+  border-left: 5px solid var(--lime);
+}
+
+.dashboard-rank h2,
+.dashboard-rank .eyebrow,
+.dashboard-rank p {
+  margin: 0;
+}
+
+.dashboard-rank .eyebrow {
+  color: var(--lime);
+}
+
+.dashboard-rank-values {
+  display: grid;
+  gap: 0.15rem;
+  margin-left: auto;
+}
+
+.dashboard-rank-values strong {
+  font-size: 1.15rem;
+}
+
+.dashboard-rank-values span,
+.dashboard-rank > p {
+  color: #d5dbe4;
+  font-size: 0.82rem;
+}
+
+.dashboard-rank .button {
+  flex: 0 0 auto;
+}
+
 .recent-training-heading {
   display: flex;
   align-items: end;
@@ -1091,6 +1132,144 @@ footer p {
   font-size: clamp(2.5rem, 7vw, 5rem);
 }
 
+.progress-page h1 {
+  font-size: clamp(2.5rem, 7vw, 5rem);
+}
+
+.rank-explanation {
+  font-weight: 700;
+}
+
+.trackrank-card {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: clamp(1.5rem, 5vw, 4rem);
+  align-items: center;
+  padding: clamp(1.5rem, 5vw, 3rem);
+  color: white;
+  background: var(--ink);
+  border-bottom: 5px solid var(--track);
+}
+
+.trackrank-card .eyebrow {
+  color: var(--lime);
+}
+
+.trackrank-card h2 {
+  margin: 0;
+  font-size: clamp(2rem, 6vw, 4rem);
+}
+
+.total-xp {
+  margin: 0.6rem 0 0;
+  color: #d5dbe4;
+  font-size: 1.2rem;
+  font-weight: 750;
+}
+
+.rank-progress {
+  display: grid;
+  gap: 0.75rem;
+  font-weight: 750;
+}
+
+progress {
+  width: 100%;
+  height: 1rem;
+  accent-color: var(--track);
+}
+
+.trackrank-card progress {
+  accent-color: var(--lime);
+}
+
+.xp-rules,
+.process-summary,
+.achievements-section {
+  margin-top: 1.25rem;
+  padding: clamp(1.25rem, 4vw, 2rem);
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.xp-rules {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.xp-rules dl,
+.process-summary dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  padding: 1px;
+  background: var(--line);
+}
+
+.xp-rules dl div,
+.process-summary dl div {
+  padding: 1rem;
+  background: #f8f9f6;
+}
+
+.xp-rules dt,
+.process-summary dt {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.xp-rules dd,
+.process-summary dd {
+  margin: 0.4rem 0 0;
+  font-size: 1.25rem;
+  font-weight: 850;
+}
+
+.achievement-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.achievement-card {
+  min-width: 0;
+  padding: 1.25rem;
+  background: #f8f9f6;
+  border: 1px solid var(--line);
+  border-top: 4px solid #7d8679;
+}
+
+.achievement-card.unlocked {
+  background: #f5f8df;
+  border-top-color: #53662b;
+}
+
+.achievement-card h3 {
+  margin: 0.5rem 0;
+}
+
+.achievement-card p {
+  overflow-wrap: anywhere;
+}
+
+.achievement-status {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.achievement-card.unlocked .achievement-status {
+  color: #3e511a;
+}
+
 .confidence-metrics {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1349,6 +1528,15 @@ footer p {
     grid-template-columns: 1fr;
   }
 
+  .dashboard-rank {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .dashboard-rank-values {
+    margin-left: 0;
+  }
+
   .recent-training-heading {
     align-items: stretch;
     flex-direction: column;
@@ -1376,7 +1564,12 @@ footer p {
   .confidence-summary,
   .repetition-row,
   .confidence-metrics,
-  .evidence-reflections {
+  .evidence-reflections,
+  .trackrank-card,
+  .xp-rules,
+  .xp-rules dl,
+  .process-summary dl,
+  .achievement-grid {
     grid-template-columns: 1fr;
   }
 

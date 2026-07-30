@@ -21,6 +21,7 @@ describe("TrackRanker application", () => {
     expect(screen.getByRole("link", { name: "Dashboard" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Sessions" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Confidence" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Progress" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Profile" })).toBeInTheDocument();
   });
 

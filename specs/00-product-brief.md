@@ -40,4 +40,4 @@ The intended first product version will focus on prescribed sprint sessions, com
 - Nutrition plans, payment processing, and team administration
 - Predictive injury or performance claims
 
-Milestone 5 adds a focused confidence history derived from stored session completions: factual summary metrics, one before/after visualisation, and prior reflection evidence. Advanced analytics, generated encouragement, dashboards, and gamification remain deferred.
+Milestone 7 adds process-based gamification derived from stored session completions: transparent XP for completion, reflection, and paired confidence check-ins; personal TrackRank levels; and fixed achievements. Leaderboards, athlete comparison, performance rewards, and streaks remain excluded.

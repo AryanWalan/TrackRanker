@@ -4,6 +4,7 @@ const navigation = [
   { to: "/", label: "Dashboard", end: true },
   { to: "/sessions", label: "Sessions" },
   { to: "/confidence", label: "Confidence" },
+  { to: "/progress", label: "Progress" },
   { to: "/profile", label: "Profile" },
 ];
 

@@ -6,6 +6,7 @@ import type { TrainingSession } from "../types/trainingSession";
 
 const api = vi.hoisted(() => ({
   getTrainingSessions: vi.fn(),
+  getProgress: vi.fn(),
 }));
 
 vi.mock("../services/trainingSessions", () => ({
@@ -55,6 +56,7 @@ function renderDashboard() {
 describe("Dashboard", () => {
   beforeEach(() => {
     api.getTrainingSessions.mockResolvedValue(sessions);
+    api.getProgress.mockImplementation(() => new Promise(() => {}));
   });
 
   it("renders the TrackRanker title and tagline", () => {
@@ -135,5 +137,50 @@ describe("Dashboard", () => {
       "href",
       "/sessions",
     );
+  });
+
+  it("displays a small TrackRank summary", async () => {
+    api.getProgress.mockResolvedValue({
+      totalXp: 120,
+      trackRank: 2,
+      currentRankXp: 20,
+      xpPerRank: 100,
+      completedSessions: 4,
+      meaningfulReflections: 3,
+      pairedConfidenceCheckIns: 2,
+      achievements: [],
+    });
+    renderDashboard();
+    expect(await screen.findByRole("heading", { name: "TrackRank 2" })).toBeInTheDocument();
+    expect(screen.getByText("120 XP")).toBeInTheDocument();
+    expect(screen.getByText("20 / 100 to next rank")).toBeInTheDocument();
+  });
+
+  it("links the TrackRank summary to Progress", async () => {
+    api.getProgress.mockResolvedValue({
+      totalXp: 0,
+      trackRank: 1,
+      currentRankXp: 0,
+      xpPerRank: 100,
+      completedSessions: 0,
+      meaningfulReflections: 0,
+      pairedConfidenceCheckIns: 0,
+      achievements: [],
+    });
+    renderDashboard();
+    expect(await screen.findByRole("link", { name: "View progress" }))
+      .toHaveAttribute("href", "/progress");
+  });
+
+  it("remains usable when progress fails", async () => {
+    api.getProgress.mockRejectedValue(new Error("private progress error"));
+    renderDashboard();
+    expect(await screen.findByText("Progress is unavailable right now.")).toBeInTheDocument();
+    expect(screen.queryByText("private progress error")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Log a session/ })).toHaveAttribute(
+      "href",
+      "/sessions/new",
+    );
+    expect(await screen.findByText("Newest starts prescription")).toBeInTheDocument();
   });
 });

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { HealthStatus } from "../components/HealthStatus";
-import { getTrainingSessions } from "../services/trainingSessions";
+import { getProgress, getTrainingSessions } from "../services/trainingSessions";
+import type { Progress } from "../types/progress";
 import type { TrainingSession } from "../types/trainingSession";
 
 function formatDate(value: string) {
@@ -20,6 +21,8 @@ function displayType(value: string) {
 export function DashboardPage() {
   const [sessions, setSessions] = useState<TrainingSession[] | null>(null);
   const [sessionsError, setSessionsError] = useState(false);
+  const [progress, setProgress] = useState<Progress | null>(null);
+  const [progressError, setProgressError] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -29,6 +32,20 @@ export function DashboardPage() {
       })
       .catch(() => {
         if (active) setSessionsError(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    getProgress()
+      .then((result) => {
+        if (active) setProgress(result);
+      })
+      .catch(() => {
+        if (active) setProgressError(true);
       });
     return () => {
       active = false;
@@ -62,6 +79,26 @@ export function DashboardPage() {
           <small>Review your session history</small>
         </Link>
       </nav>
+
+      <section className="dashboard-rank" aria-labelledby="dashboard-rank-title">
+        <div>
+          <p className="eyebrow">Training process</p>
+          <h2 id="dashboard-rank-title">
+            {progress ? `TrackRank ${progress.trackRank}` : "TrackRank"}
+          </h2>
+        </div>
+        {!progress && !progressError && <p role="status">Calculating progress…</p>}
+        {progressError && <p>Progress is unavailable right now.</p>}
+        {progress && (
+          <>
+            <div className="dashboard-rank-values">
+              <strong>{progress.totalXp} XP</strong>
+              <span>{progress.currentRankXp} / {progress.xpPerRank} to next rank</span>
+            </div>
+            <Link className="button secondary" to="/progress">View progress</Link>
+          </>
+        )}
+      </section>
 
       <section className="recent-training" aria-labelledby="recent-training-title">
         <div className="recent-training-heading">
