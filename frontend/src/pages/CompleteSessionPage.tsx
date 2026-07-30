@@ -4,11 +4,14 @@ import { SessionCompletionForm } from "../components/SessionCompletionForm";
 import {
   ApiError,
   createSessionCompletion,
+  getProgress,
   getSessionCompletion,
   getTrainingSession,
   updateSessionCompletion,
 } from "../services/trainingSessions";
 import type { SessionCompletion } from "../types/sessionCompletion";
+import type { CompletionProgressFeedback } from "../types/completionProgressFeedback";
+import type { Progress } from "../types/progress";
 import type { TrainingSession } from "../types/trainingSession";
 
 export function CompleteSessionPage() {
@@ -58,12 +61,41 @@ export function CompleteSessionPage() {
         submitLabel={completion ? "Save completed session" : "Log completed session"}
         cancelTo={`/sessions/${id}`}
         onSubmit={async (input) => {
+          const previousProgressPromise: Promise<Progress | null> = getProgress()
+            .catch(() => null);
           if (completion) {
             await updateSessionCompletion(id, input);
           } else {
             await createSessionCompletion(id, input);
           }
-          navigate(`/sessions/${id}`);
+
+          const currentProgressPromise: Promise<Progress | null> = getProgress()
+            .catch(() => null);
+          const [previousProgress, currentProgress] = await Promise.all([
+            previousProgressPromise,
+            currentProgressPromise,
+          ]);
+          const newlyUnlockedAchievements = previousProgress && currentProgress
+            ? currentProgress.achievements.filter((achievement) =>
+                achievement.isUnlocked
+                && !previousProgress.achievements.some(
+                  (previous) => previous.id === achievement.id && previous.isUnlocked,
+                ))
+            : [];
+          const feedback: CompletionProgressFeedback = {
+            xpChange: previousProgress && currentProgress
+              ? currentProgress.totalXp - previousProgress.totalXp
+              : null,
+            currentProgress,
+            rankIncreased: Boolean(
+              previousProgress
+              && currentProgress
+              && currentProgress.trackRank > previousProgress.trackRank,
+            ),
+            newlyUnlockedAchievements,
+          };
+
+          navigate(`/sessions/${id}`, { state: { progressFeedback: feedback } });
         }}
       />
     </section>

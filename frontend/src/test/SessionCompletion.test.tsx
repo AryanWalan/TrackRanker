@@ -5,6 +5,7 @@ import { vi } from "vitest";
 import App from "../App";
 import { SessionCompletionForm } from "../components/SessionCompletionForm";
 import type { SessionCompletion } from "../types/sessionCompletion";
+import type { Progress } from "../types/progress";
 import type { TrainingSession } from "../types/trainingSession";
 
 const MockApiError = vi.hoisted(() =>
@@ -24,6 +25,7 @@ const api = vi.hoisted(() => ({
   createSessionCompletion: vi.fn(),
   updateSessionCompletion: vi.fn(),
   deleteSessionCompletion: vi.fn(),
+  getProgress: vi.fn(),
 }));
 
 vi.mock("../services/trainingSessions", () => ({
@@ -75,6 +77,42 @@ const completion: SessionCompletion = {
   updatedAtUtc: "2026-08-01T03:30:00Z",
 };
 
+const lockedAchievement = {
+  id: "reflective-start",
+  name: "Reflective Start",
+  description: "Reflect on your first completed session.",
+  isUnlocked: false,
+  currentProgress: 0,
+  requiredProgress: 1,
+};
+
+const consistencyAchievement = {
+  id: "consistent-work",
+  name: "Consistent Work",
+  description: "Complete five training sessions.",
+  isUnlocked: false,
+  currentProgress: 4,
+  requiredProgress: 5,
+};
+
+function progress(
+  totalXp: number,
+  trackRank = 1,
+  currentRankXp = totalXp,
+  achievements = [lockedAchievement, consistencyAchievement],
+): Progress {
+  return {
+    totalXp,
+    trackRank,
+    currentRankXp,
+    xpPerRank: 100,
+    completedSessions: 1,
+    meaningfulReflections: 0,
+    pairedConfidenceCheckIns: 0,
+    achievements,
+  };
+}
+
 function renderRoute(path: string) {
   return render(
     <MemoryRouter initialEntries={[path]}>
@@ -91,6 +129,7 @@ describe("session completion and reflection", () => {
     api.updateSessionCompletion.mockResolvedValue(completion);
     api.deleteSessionCompletion.mockResolvedValue(undefined);
     api.getTrainingSessions.mockResolvedValue([]);
+    api.getProgress.mockResolvedValue(progress(65));
   });
 
   it("shows an empty completion state on session details", async () => {
@@ -198,6 +237,167 @@ describe("session completion and reflection", () => {
           confidenceAfter: 4,
         }),
       }),
+    );
+    expect(api.getProgress).toHaveBeenCalledTimes(2);
+  });
+
+  it("compares progress around a successful new completion and shows positive XP", async () => {
+    const user = userEvent.setup();
+    api.getSessionCompletion.mockRejectedValue(new MockApiError("Missing", 404));
+    api.getProgress
+      .mockResolvedValueOnce(progress(45))
+      .mockResolvedValueOnce(progress(65));
+    renderRoute(`/sessions/${session.id}/complete`);
+
+    await user.selectOptions(await screen.findByLabelText(/Actual intensity/), "8");
+    await user.selectOptions(screen.getByLabelText(/Perceived difficulty/), "7");
+    await user.click(screen.getByRole("button", { name: "Log completed session" }));
+
+    expect(await screen.findByRole("heading", { name: "Progress earned" })).toBeInTheDocument();
+    expect(screen.getByText("+20 XP")).toBeInTheDocument();
+    expect(api.createSessionCompletion).toHaveBeenCalledTimes(1);
+    expect(api.getProgress).toHaveBeenCalledTimes(2);
+  });
+
+  it("shows an unchanged update without prominent +0 XP", async () => {
+    const user = userEvent.setup();
+    api.getProgress.mockResolvedValue(progress(65));
+    renderRoute(`/sessions/${session.id}/complete`);
+
+    await user.click(await screen.findByRole("button", { name: "Save completed session" }));
+
+    expect(await screen.findByRole("heading", { name: "Session updated" })).toBeInTheDocument();
+    expect(screen.getByText("Your progress total is unchanged.")).toBeInTheDocument();
+    expect(screen.queryByText("+0 XP")).not.toBeInTheDocument();
+  });
+
+  it("presents a negative XP update neutrally", async () => {
+    const user = userEvent.setup();
+    api.getProgress
+      .mockResolvedValueOnce(progress(65))
+      .mockResolvedValueOnce(progress(55));
+    renderRoute(`/sessions/${session.id}/complete`);
+
+    await user.click(await screen.findByRole("button", { name: "Save completed session" }));
+
+    expect(await screen.findByRole("heading", { name: "Progress updated" })).toBeInTheDocument();
+    expect(screen.getByText("-10 XP")).toBeInTheDocument();
+    expect(screen.queryByText(/lost|penalty|bad result/i)).not.toBeInTheDocument();
+  });
+
+  it("announces a TrackRank increase", async () => {
+    const user = userEvent.setup();
+    api.getProgress
+      .mockResolvedValueOnce(progress(95, 1, 95))
+      .mockResolvedValueOnce(progress(115, 2, 15));
+    renderRoute(`/sessions/${session.id}/complete`);
+
+    await user.click(await screen.findByRole("button", { name: "Save completed session" }));
+
+    expect(await screen.findByRole("heading", { name: "TrackRank increased" })).toBeInTheDocument();
+    expect(screen.getByText("TrackRank 2")).toBeInTheDocument();
+  });
+
+  it("shows an achievement that became unlocked", async () => {
+    const user = userEvent.setup();
+    const unlocked = { ...lockedAchievement, isUnlocked: true, currentProgress: 1 };
+    api.getProgress
+      .mockResolvedValueOnce(progress(65))
+      .mockResolvedValueOnce(progress(75, 1, 75, [unlocked, consistencyAchievement]));
+    renderRoute(`/sessions/${session.id}/complete`);
+
+    await user.click(await screen.findByRole("button", { name: "Save completed session" }));
+
+    expect(await screen.findByRole("heading", { name: "Achievement unlocked" })).toBeInTheDocument();
+    expect(screen.getByText("Reflective Start")).toBeInTheDocument();
+    expect(screen.getByText("Reflect on your first completed session.")).toBeInTheDocument();
+  });
+
+  it("does not show an achievement that was already unlocked", async () => {
+    const user = userEvent.setup();
+    const unlocked = { ...lockedAchievement, isUnlocked: true, currentProgress: 1 };
+    api.getProgress
+      .mockResolvedValueOnce(progress(65, 1, 65, [unlocked]))
+      .mockResolvedValueOnce(progress(65, 1, 65, [unlocked]));
+    renderRoute(`/sessions/${session.id}/complete`);
+
+    await user.click(await screen.findByRole("button", { name: "Save completed session" }));
+
+    await screen.findByRole("heading", { name: "Session updated" });
+    expect(screen.queryByRole("heading", { name: /Achievements? unlocked/ })).not.toBeInTheDocument();
+    expect(screen.queryByText("Reflective Start")).not.toBeInTheDocument();
+  });
+
+  it("shows multiple newly unlocked achievements", async () => {
+    const user = userEvent.setup();
+    const reflective = { ...lockedAchievement, isUnlocked: true, currentProgress: 1 };
+    const consistent = { ...consistencyAchievement, isUnlocked: true, currentProgress: 5 };
+    api.getProgress
+      .mockResolvedValueOnce(progress(80))
+      .mockResolvedValueOnce(progress(100, 2, 0, [reflective, consistent]));
+    renderRoute(`/sessions/${session.id}/complete`);
+
+    await user.click(await screen.findByRole("button", { name: "Save completed session" }));
+
+    expect(await screen.findByRole("heading", { name: "Achievements unlocked" })).toBeInTheDocument();
+    expect(screen.getByText("Reflective Start")).toBeInTheDocument();
+    expect(screen.getByText("Consistent Work")).toBeInTheDocument();
+  });
+
+  it("does not block saving when pre-save progress fails", async () => {
+    const user = userEvent.setup();
+    api.getProgress
+      .mockRejectedValueOnce(new Error("Unavailable"))
+      .mockResolvedValueOnce(progress(65));
+    renderRoute(`/sessions/${session.id}/complete`);
+
+    await user.click(await screen.findByRole("button", { name: "Save completed session" }));
+
+    expect(api.updateSessionCompletion).toHaveBeenCalledTimes(1);
+    expect(await screen.findByRole("heading", { name: "Session saved" })).toBeInTheDocument();
+    expect(screen.getByText("TrackRank 1")).toBeInTheDocument();
+  });
+
+  it("reports a successful save when post-save progress fails", async () => {
+    const user = userEvent.setup();
+    api.getProgress
+      .mockResolvedValueOnce(progress(65))
+      .mockRejectedValueOnce(new Error("Unavailable"));
+    renderRoute(`/sessions/${session.id}/complete`);
+
+    await user.click(await screen.findByRole("button", { name: "Save completed session" }));
+
+    expect(api.updateSessionCompletion).toHaveBeenCalledTimes(1);
+    expect(await screen.findByRole("heading", { name: "Session saved" })).toBeInTheDocument();
+    expect(screen.getByText("Progress information is temporarily unavailable.")).toBeInTheDocument();
+  });
+
+  it("does not fabricate an XP delta without previous progress", async () => {
+    const user = userEvent.setup();
+    api.getProgress
+      .mockRejectedValueOnce(new Error("Unavailable"))
+      .mockResolvedValueOnce(progress(100, 2, 0));
+    renderRoute(`/sessions/${session.id}/complete`);
+
+    await user.click(await screen.findByRole("button", { name: "Save completed session" }));
+
+    await screen.findByRole("heading", { name: "Session saved" });
+    expect(screen.getByText(/previous total was unavailable/)).toBeInTheDocument();
+    expect(screen.queryByText(/\+\d+ XP/)).not.toBeInTheDocument();
+  });
+
+  it("links progress feedback to the Progress page", async () => {
+    const user = userEvent.setup();
+    api.getProgress
+      .mockResolvedValueOnce(progress(45))
+      .mockResolvedValueOnce(progress(65));
+    renderRoute(`/sessions/${session.id}/complete`);
+
+    await user.click(await screen.findByRole("button", { name: "Save completed session" }));
+
+    expect(await screen.findByRole("link", { name: "View progress" })).toHaveAttribute(
+      "href",
+      "/progress",
     );
   });
 

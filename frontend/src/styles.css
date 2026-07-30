@@ -934,6 +934,62 @@ h2 {
   border-top: 5px solid #53662b;
 }
 
+.progress-earned-feedback {
+  margin: 1.25rem 0;
+  padding: clamp(1.1rem, 3vw, 1.5rem);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--track);
+}
+
+.progress-earned-feedback:focus {
+  outline: 3px solid var(--track);
+  outline-offset: 4px;
+}
+
+.progress-feedback-summary,
+.feedback-rank {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.progress-feedback-summary h2 {
+  margin: 0.15rem 0 0;
+}
+
+.xp-change {
+  margin: 0;
+  color: var(--track-dark);
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.feedback-rank {
+  margin-bottom: 0.45rem;
+}
+
+.progress-earned-feedback progress {
+  width: 100%;
+}
+
+.feedback-achievements {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #f4f6f2;
+}
+
+.feedback-achievements h3,
+.feedback-achievements article p {
+  margin-top: 0;
+}
+
+.feedback-achievements article + article {
+  margin-top: 0.75rem;
+}
+
 .completed-session-heading {
   display: flex;
   align-items: end;
@@ -1550,6 +1606,8 @@ progress {
   .detail-header,
   .confirm-panel,
   .completed-session-heading,
+  .progress-feedback-summary,
+  .feedback-rank,
   .clarity-preset-row,
   .clarity-empty {
     align-items: stretch;

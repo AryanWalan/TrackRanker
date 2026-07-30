@@ -10,7 +10,7 @@ Competitive sprint athletes working with a coach, initially focused on the 100m,
 
 ## Current milestone
 
-TrackRanker now includes process-based XP, personal TrackRank levels, and six achievements derived from stored session completions. The Progress page makes the rules and process totals transparent, while the Dashboard includes a small TrackRank summary alongside recent training.
+TrackRanker now includes process-based XP, personal TrackRank levels, and six achievements derived from stored session completions. After a completion is saved, athletes receive immediate feedback for backend-derived XP, rank, and newly unlocked achievement changes. The Progress page makes the rules and process totals transparent, while the Dashboard includes a small TrackRank summary alongside recent training.
 
 Streamlined planned-session entry, completed-session reflection, and evidence-based Confidence History remain available. Authentication, athlete profiles, leaderboards, athlete comparison, advanced analytics, and AI-generated encouragement are not implemented.
 

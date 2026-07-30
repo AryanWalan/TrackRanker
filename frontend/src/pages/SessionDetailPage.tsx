@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { ProgressEarnedFeedback } from "../components/ProgressEarnedFeedback";
 import {
   ApiError,
   deleteSessionCompletion,
@@ -8,6 +9,7 @@ import {
   getTrainingSession,
 } from "../services/trainingSessions";
 import type { SessionCompletion } from "../types/sessionCompletion";
+import type { CompletionNavigationState } from "../types/completionProgressFeedback";
 import type { TrainingSession } from "../types/trainingSession";
 
 function DetailSection({
@@ -35,7 +37,11 @@ function confidenceText(value: number | null) {
 
 export function SessionDetailPage() {
   const { id = "" } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
+  const [progressFeedback] = useState(
+    () => (location.state as CompletionNavigationState | null)?.progressFeedback ?? null,
+  );
   const [session, setSession] = useState<TrainingSession | null>(null);
   const [completion, setCompletion] = useState<SessionCompletion | null | undefined>();
   const [completionError, setCompletionError] = useState(false);
@@ -59,6 +65,12 @@ export function SessionDetailPage() {
         }
       });
   }, [id]);
+
+  useEffect(() => {
+    if ((location.state as CompletionNavigationState | null)?.progressFeedback) {
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [location.pathname, location.state, navigate]);
 
   if (error) {
     return (
@@ -84,6 +96,7 @@ export function SessionDetailPage() {
   return (
     <article className="session-detail">
       <Link className="back-link" to="/sessions">← Back to Sessions</Link>
+      {progressFeedback && <ProgressEarnedFeedback feedback={progressFeedback} />}
       <header className="detail-header">
         <div>
           <p className="eyebrow">Session</p>
