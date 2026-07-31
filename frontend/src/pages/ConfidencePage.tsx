@@ -117,27 +117,40 @@ function EvidenceCard({ entry }: { entry: ConfidenceHistoryEntry }) {
   const reflectionFields = [
     ["What went well", entry.wentWell],
     ["What improved", entry.improved],
-    ["Coach feedback", entry.coachFeedback],
     ["Next focus", entry.nextFocus],
+    ["Coach feedback", entry.coachFeedback],
     ["What was difficult", entry.wasDifficult],
   ].filter((field): field is [string, string] => Boolean(field[1]));
   const change = confidenceChange(entry);
+  const hasBefore = entry.confidenceBefore !== null;
+  const hasAfter = entry.confidenceAfter !== null;
 
   return (
     <article className="confidence-evidence-card">
       <header>
-        <div>
-          <p className="session-type">{typeLabels[entry.sessionType]}</p>
-          <h3>{entry.sessionTitle}</h3>
-        </div>
-        <time dateTime={entry.sessionDate}>{formatDate(entry.sessionDate)}</time>
+        <h3>{entry.sessionTitle}</h3>
+        <p className="evidence-session-meta">
+          <span>{typeLabels[entry.sessionType]}</span>
+          <span aria-hidden="true">·</span>
+          <time dateTime={entry.sessionDate}>{formatDate(entry.sessionDate)}</time>
+        </p>
       </header>
-      {(entry.confidenceBefore !== null || entry.confidenceAfter !== null) && (
-        <dl className="evidence-confidence">
-          <div><dt>Before</dt><dd>{entry.confidenceBefore === null ? "Not recorded" : `${entry.confidenceBefore} / 5`}</dd></div>
-          <div><dt>After</dt><dd>{entry.confidenceAfter === null ? "Not recorded" : `${entry.confidenceAfter} / 5`}</dd></div>
-          {change !== null && <div><dt>Change</dt><dd>{change}</dd></div>}
-        </dl>
+      {(hasBefore || hasAfter) && (
+        <section
+          className="evidence-confidence"
+          aria-label={[
+            hasBefore ? `Confidence before: ${entry.confidenceBefore} out of 5` : null,
+            hasAfter ? `Confidence after: ${entry.confidenceAfter} out of 5` : null,
+          ].filter(Boolean).join(". ")}
+        >
+          <h4>Confidence</h4>
+          <p className="confidence-comparison">
+            {hasBefore && <span><strong>{entry.confidenceBefore} / 5</strong> before</span>}
+            {hasBefore && hasAfter && <span className="confidence-arrow" aria-hidden="true">→</span>}
+            {hasAfter && <span><strong>{entry.confidenceAfter} / 5</strong> after</span>}
+          </p>
+          {change !== null && <p className="confidence-change">Change {change}</p>}
+        </section>
       )}
       {reflectionFields.length > 0 && (
         <div className="evidence-reflections">
@@ -149,9 +162,7 @@ function EvidenceCard({ entry }: { entry: ConfidenceHistoryEntry }) {
           ))}
         </div>
       )}
-      <Link className="evidence-link" to={`/sessions/${entry.trainingSessionId}`}>
-        View session: {entry.sessionTitle}
-      </Link>
+      <Link className="evidence-link" to={`/sessions/${entry.trainingSessionId}`}>View session</Link>
     </article>
   );
 }
@@ -175,17 +186,32 @@ export function ConfidencePage() {
   );
 
   if (error) {
-    return <section className="state-panel error-panel" role="alert"><h1>Confidence</h1><p>{error}</p></section>;
+    return <section className="state-panel error-panel" role="alert"><h1>Your Confidence Evidence</h1><p>{error}</p></section>;
   }
   if (!history) {
-    return <section className="state-panel" aria-live="polite"><h1>Confidence</h1><p>Loading confidence history…</p></section>;
+    return <section className="state-panel" aria-live="polite"><h1>Your Confidence Evidence</h1><p>Loading confidence history…</p></section>;
   }
   if (history.entries.length === 0) {
     return (
-      <section className="state-panel empty-state">
-        <h1>No confidence history yet.</h1>
-        <p>Complete a session and add a short reflection to start building evidence from your training.</p>
-        <Link className="button primary" to="/sessions">View sessions</Link>
+      <section className="confidence-page">
+        <header className="page-heading compact">
+          <div>
+            <p className="eyebrow">Evidence from your training</p>
+            <h1>Your Confidence Evidence</h1>
+            <p>
+              See what your previous sessions say about your preparation. Complete sessions
+              and add short reflections to build your confidence history.
+            </p>
+          </div>
+        </header>
+        <div className="state-panel empty-state confidence-empty-state">
+          <h2>Build your confidence history</h2>
+          <p>
+            After training, log how the session went, record your confidence, and add a short
+            reflection. TrackRanker will help you look back at evidence from your own training.
+          </p>
+          <Link className="button primary" to="/sessions">View sessions</Link>
+        </div>
       </section>
     );
   }
@@ -198,15 +224,18 @@ export function ConfidencePage() {
     <section className="confidence-page">
       <header className="page-heading compact">
         <div>
-          <p className="eyebrow">Your training evidence</p>
-          <h1>Confidence</h1>
-          <p>Look back at the sessions you've completed and the evidence you've built.</p>
+          <p className="eyebrow">Evidence from your training</p>
+          <h1>Your Confidence Evidence</h1>
+          <p>
+            See what your previous sessions say about your preparation. Complete sessions
+            and add short reflections to build your confidence history.
+          </p>
         </div>
       </header>
 
       <dl className="confidence-metrics" aria-label="Confidence history summary">
-        <div><dt>Reflected sessions</dt><dd>{history.totalReflectedSessions}</dd></div>
-        {hasPairedConfidence && <div><dt>Higher after training</dt><dd>{history.sessionsImproved} of {history.sessionsWithConfidence}</dd></div>}
+        <div><dt>Sessions with reflections</dt><dd>{history.totalReflectedSessions}</dd></div>
+        {hasPairedConfidence && <div><dt>Confidence higher after</dt><dd>{history.sessionsImproved} of {history.sessionsWithConfidence} sessions</dd></div>}
         {history.averageConfidenceBefore !== null && <div><dt>Average before</dt><dd>{history.averageConfidenceBefore.toFixed(1)} / 5</dd></div>}
         {history.averageConfidenceAfter !== null && <div><dt>Average after</dt><dd>{history.averageConfidenceAfter.toFixed(1)} / 5</dd></div>}
       </dl>

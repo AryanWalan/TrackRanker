@@ -18,11 +18,15 @@ describe("TrackRanker application", () => {
     renderApp();
 
     expect(screen.getByRole("heading", { name: "TrackRanker" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "TrackRanker logo" })).toHaveAttribute(
+      "src",
+      "/TrackRankerLogo.png",
+    );
     expect(screen.getByRole("link", { name: "Dashboard" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Sessions" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Confidence" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Progress" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Profile" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Profile" })).not.toBeInTheDocument();
   });
 
   it("navigates to the sessions route", async () => {
@@ -32,7 +36,15 @@ describe("TrackRanker application", () => {
 
     await user.click(screen.getByRole("link", { name: "Sessions" }));
 
-    expect(screen.getByRole("heading", { name: "Training Sessions" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Training history" })).toBeInTheDocument();
+  });
+
+  it("redirects the retired profile route safely to the Dashboard", () => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(() => new Promise(() => {}));
+    renderApp("/profile");
+
+    expect(screen.getByRole("heading", { name: "TrackRanker" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Profile" })).not.toBeInTheDocument();
   });
 
   it("shows a successful mocked backend connection", async () => {

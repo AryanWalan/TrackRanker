@@ -2,7 +2,7 @@
 
 **Understand your training. Trust your progress.**
 
-TrackRanker is a gamified training-clarity and confidence application for competitive 100m, 200m, and 400m sprinters. It is designed to support the coach-athlete relationship by helping athletes understand, record, and reflect on prescribed training.
+TrackRanker is a gamified training-clarity and confidence application for competitive 100m, 200m, and 400m sprinters. It supports the coach-athlete relationship by helping athletes log prescribed training, understand its purpose, reflect on completed sessions, and build confidence from their own training evidence.
 
 ## Target users
 
@@ -10,7 +10,9 @@ Competitive sprint athletes working with a coach, initially focused on the 100m,
 
 ## Current milestone
 
-TrackRanker now includes process-based XP, personal TrackRank levels, and six achievements derived from stored session completions. After a completion is saved, athletes receive immediate feedback for backend-derived XP, rank, and newly unlocked achievement changes. The Progress page makes the rules and process totals transparent, while the Dashboard includes a small TrackRank summary alongside recent training.
+TrackRanker's Dashboard now gives first-time athletes a concise explanation of the product, its three-step workflow, and a clear first action. Training history is distinguished from logging a new session, the unused Profile navigation has been removed, and Confidence History presents previous reflections as readable evidence.
+
+TrackRanker also includes process-based XP, personal TrackRank levels, and six achievements derived from stored session completions. After a completion is saved, athletes receive immediate feedback for backend-derived XP, rank, and newly unlocked achievement changes. The Progress page makes the rules and process totals transparent, while the Dashboard keeps TrackRank and recent training after its core workflow guidance.
 
 Streamlined planned-session entry includes a Repeat session action and a Zustand-persisted unfinished draft. Session-list and Confidence filters also persist across navigation and refresh without storing server responses in client state. Completed-session reflection and evidence-based Confidence History remain available. Authentication, athlete profiles, leaderboards, athlete comparison, advanced analytics, and AI-generated encouragement are not implemented.
 

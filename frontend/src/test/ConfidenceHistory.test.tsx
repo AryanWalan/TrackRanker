@@ -93,35 +93,75 @@ describe("confidence history", () => {
       entries: [],
     });
     renderPage();
-    expect(await screen.findByRole("heading", { name: "No confidence history yet." })).toBeInTheDocument();
+    const emptyHeading = await screen.findByRole("heading", { name: "Build your confidence history" });
+    expect(screen.getByRole("heading", { name: "Your Confidence Evidence" })).toBeInTheDocument();
+    expect(emptyHeading).toBeInTheDocument();
+    expect(emptyHeading.parentElement).toHaveTextContent(
+      "After training, log how the session went",
+    );
+    expect(emptyHeading.parentElement).toHaveTextContent(
+      "add a short reflection",
+    );
     expect(screen.getByRole("link", { name: "View sessions" })).toHaveAttribute("href", "/sessions");
+  });
+
+  it("explains the purpose of confidence evidence", async () => {
+    renderPage();
+    await screen.findByText("Sessions with reflections");
+    const heading = screen.getByRole("heading", { name: "Your Confidence Evidence" });
+    expect(heading).toBeInTheDocument();
+    expect(heading.parentElement).toHaveTextContent(
+      "See what your previous sessions say about your preparation",
+    );
+    expect(heading.parentElement).toHaveTextContent(
+      "add short reflections to build your confidence history",
+    );
   });
 
   it("renders summary metrics from the API", async () => {
     renderPage();
     expect(await screen.findByText("3.0 / 5")).toBeInTheDocument();
-    expect(screen.getByText("1 of 3")).toBeInTheDocument();
+    expect(screen.getByText("1 of 3 sessions")).toBeInTheDocument();
     expect(screen.getByText("3.3 / 5")).toBeInTheDocument();
+    expect(screen.getByText("Sessions with reflections")).toBeInTheDocument();
   });
 
   it("renders before, after, and a positive delta", async () => {
     renderPage();
     expect(await screen.findByText("2 / 5")).toBeInTheDocument();
     expect(screen.getAllByText("4 / 5")).not.toHaveLength(0);
-    expect(screen.getByText("+2")).toBeInTheDocument();
+    expect(screen.getByText("Change +2")).toBeInTheDocument();
   });
 
   it("labels unchanged and negative changes neutrally", async () => {
     renderPage();
-    expect(await screen.findByText("No change")).toBeInTheDocument();
-    expect(screen.getByText("-1")).toBeInTheDocument();
+    expect(await screen.findByText("Change No change")).toBeInTheDocument();
+    expect(screen.getByText("Change -1")).toBeInTheDocument();
   });
 
   it("renders reflection evidence", async () => {
     renderPage();
-    expect(await screen.findByText("Stayed relaxed through the final 50m.")).toBeInTheDocument();
+    expect(await screen.findByText("Speed Endurance — 3 × 150m")).toBeInTheDocument();
+    expect(screen.getAllByText("12 August 2026")).not.toHaveLength(0);
+    expect(screen.getByText("Stayed relaxed through the final 50m.")).toBeInTheDocument();
     expect(screen.getByText("Times were more consistent.")).toBeInTheDocument();
     expect(screen.getByText("Good rhythm.")).toBeInTheDocument();
+    expect(screen.getAllByRole("heading", { name: "What went well" })).not.toHaveLength(0);
+    expect(screen.getByRole("heading", { name: "What improved" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Next focus" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Coach feedback" })).toBeInTheDocument();
+  });
+
+  it("omits headings for empty reflection fields", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await user.selectOptions(await screen.findByLabelText("Session type"), "Acceleration");
+
+    expect(screen.getByText("Strong first step.")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "What improved" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Next focus" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Coach feedback" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "What was difficult" })).not.toBeInTheDocument();
   });
 
   it("filters evidence by the existing session types", async () => {
@@ -175,9 +215,8 @@ describe("confidence history", () => {
 
   it("links evidence to the source session", async () => {
     renderPage();
-    expect(await screen.findByRole("link", {
-      name: "View session: Speed Endurance — 3 × 150m",
-    })).toHaveAttribute("href", "/sessions/507f1f77bcf86cd799439011");
+    expect((await screen.findAllByRole("link", { name: "View session" }))[0])
+      .toHaveAttribute("href", "/sessions/507f1f77bcf86cd799439011");
   });
 
   it("renders reflection-only partial data without a chart", async () => {
@@ -203,7 +242,9 @@ describe("confidence history", () => {
       entries: [{ ...history.entries[0], confidenceAfter: null }],
     });
     renderPage();
-    expect(await screen.findByText("Not recorded")).toBeInTheDocument();
+    expect(await screen.findByText("2 / 5")).toBeInTheDocument();
+    expect(screen.queryByText("Not recorded")).not.toBeInTheDocument();
+    expect(screen.queryByText("0 / 5")).not.toBeInTheDocument();
     expect(screen.queryByText("+2")).not.toBeInTheDocument();
   });
 

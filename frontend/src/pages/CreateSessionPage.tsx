@@ -125,7 +125,7 @@ export function CreateSessionPage() {
       <div className="page-heading compact">
         <div>
           <p className="eyebrow">New training</p>
-          <h1>Add Session</h1>
+          <h1>Log a session</h1>
           <p>Capture what you are doing and the reason behind the work.</p>
           {copyState.status === "loaded" && (
             <p className="repeat-session-context">

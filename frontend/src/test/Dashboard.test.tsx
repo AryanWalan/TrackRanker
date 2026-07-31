@@ -59,11 +59,24 @@ describe("Dashboard", () => {
     api.getProgress.mockImplementation(() => new Promise(() => {}));
   });
 
-  it("renders the TrackRanker title and tagline", () => {
+  it("explains who TrackRanker is for and its core purpose", () => {
     api.getTrainingSessions.mockImplementation(() => new Promise(() => {}));
     renderDashboard();
     expect(screen.getByRole("heading", { name: "TrackRanker" })).toBeInTheDocument();
-    expect(screen.getByText("Understand your training. Trust your progress.")).toBeInTheDocument();
+    expect(screen.getByText(/Training clarity and confidence for 100m, 200m and 400m sprinters/))
+      .toBeInTheDocument();
+    expect(screen.getByText(/Log what your coach gives you/)).toHaveTextContent(
+      "reflect on how they went, and build confidence from your own training",
+    );
+  });
+
+  it("renders the three-step TrackRanker workflow", () => {
+    api.getTrainingSessions.mockImplementation(() => new Promise(() => {}));
+    renderDashboard();
+    expect(screen.getByRole("heading", { name: "How TrackRanker works" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Log your session" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Complete and reflect" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Build confidence" })).toBeInTheDocument();
   });
 
   it("links Log a session to session creation", () => {
@@ -75,13 +88,14 @@ describe("Dashboard", () => {
     );
   });
 
-  it("links View training to the sessions list", () => {
+  it("links the distinctly labelled Training history action to the sessions list", () => {
     api.getTrainingSessions.mockImplementation(() => new Promise(() => {}));
     renderDashboard();
-    expect(screen.getByRole("link", { name: /View training/ })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /Training history/ })).toHaveAttribute(
       "href",
       "/sessions",
     );
+    expect(screen.getByRole("link", { name: /Log a session/ })).toBeInTheDocument();
   });
 
   it("renders recent sessions returned by the API", async () => {
@@ -133,7 +147,7 @@ describe("Dashboard", () => {
       "href",
       "/sessions/new",
     );
-    expect(screen.getByRole("link", { name: /View training/ })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /Training history/ })).toHaveAttribute(
       "href",
       "/sessions",
     );

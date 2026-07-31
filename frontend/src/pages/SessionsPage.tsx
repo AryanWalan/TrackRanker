@@ -57,24 +57,24 @@ export function SessionsPage() {
       <div className="page-heading">
         <div>
           <p className="eyebrow">Training</p>
-          <h1>Training Sessions</h1>
-          <p>Keep each prescription, purpose, and focus point clear in one place.</p>
+          <h1>Training history</h1>
+          <p>View, repeat, and manage the sessions you have already logged.</p>
         </div>
-        <Link className="button primary" to="/sessions/new">Add Session</Link>
+        <Link className="button primary" to="/sessions/new">Log a session</Link>
       </div>
 
       {!sessions && !error && <p className="state-panel" role="status">Loading sessions…</p>}
       {error && (
         <div className="state-panel error-panel" role="alert">
           <h2>Sessions could not be loaded</h2>
-          <p>Check that the TrackRanker API is running, then refresh this page.</p>
+          <p>Your training could not be loaded right now. Refresh and try again.</p>
         </div>
       )}
       {sessions?.length === 0 && (
         <div className="state-panel empty-state">
-          <h2>No sessions yet.</h2>
-          <p>Add your first training session to start building clarity around your training.</p>
-          <Link className="button primary" to="/sessions/new">Add Session</Link>
+          <h2>No sessions logged yet.</h2>
+          <p>Log your first training session to start building your training history.</p>
+          <Link className="button primary" to="/sessions/new">Log a session</Link>
         </div>
       )}
       {sessions && sessions.length > 0 && (

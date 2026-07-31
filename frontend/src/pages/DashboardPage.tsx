@@ -64,19 +64,53 @@ export function DashboardPage() {
   return (
     <section className="dashboard-page">
       <header className="hero" aria-labelledby="dashboard-title">
-        <p className="eyebrow">Sprint training, made clear</p>
+        <p className="eyebrow">For 100m, 200m and 400m sprinters</p>
         <h1 id="dashboard-title">TrackRanker</h1>
-        <p className="tagline">Understand your training. Trust your progress.</p>
+        <p className="tagline">Training clarity and confidence for 100m, 200m and 400m sprinters.</p>
+        <p className="hero-support">
+          Log what your coach gives you, understand your sessions, reflect on how they went,
+          and build confidence from your own training.
+        </p>
       </header>
+
+      <section className="dashboard-workflow" aria-labelledby="dashboard-workflow-title">
+        <div className="dashboard-workflow-heading">
+          <p className="eyebrow">Start here</p>
+          <h2 id="dashboard-workflow-title">How TrackRanker works</h2>
+        </div>
+        <ol>
+          <li>
+            <span aria-hidden="true">1</span>
+            <div>
+              <h3>Log your session</h3>
+              <p>Add the training session your coach has prescribed.</p>
+            </div>
+          </li>
+          <li>
+            <span aria-hidden="true">2</span>
+            <div>
+              <h3>Complete and reflect</h3>
+              <p>Record how the session went, what you learned, and how confident you felt.</p>
+            </div>
+          </li>
+          <li>
+            <span aria-hidden="true">3</span>
+            <div>
+              <h3>Build confidence</h3>
+              <p>Look back at your training evidence, reflections, and progress.</p>
+            </div>
+          </li>
+        </ol>
+      </section>
 
       <nav className="dashboard-actions" aria-label="Dashboard quick actions">
         <Link className="dashboard-action primary-action" to="/sessions/new">
           <span>Log a session</span>
-          <small>Record your prescribed training</small>
+          <small>Add today's or an upcoming training session.</small>
         </Link>
         <Link className="dashboard-action" to="/sessions">
-          <span>View training</span>
-          <small>Review your session history</small>
+          <span>Training history</span>
+          <small>View, repeat, and manage sessions you've already logged.</small>
         </Link>
       </nav>
 
@@ -86,6 +120,9 @@ export function DashboardPage() {
           <h2 id="dashboard-rank-title">
             {progress ? `TrackRank ${progress.trackRank}` : "TrackRank"}
           </h2>
+          <p className="dashboard-rank-context">
+            Engagement with your training process, not sprint ability.
+          </p>
         </div>
         {!progress && !progressError && <p role="status">Calculating progress…</p>}
         {progressError && <p>Progress is unavailable right now.</p>}

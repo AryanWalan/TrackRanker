@@ -309,6 +309,10 @@ export function SessionCompletionForm({
                   : "Confidence after the session"}
               </span>
               <select
+                aria-label={key === "confidenceBefore"
+                  ? "Confidence before the session"
+                  : "Confidence after the session"}
+                aria-describedby={`${key}-help`}
                 value={values.reflection[key] ?? ""}
                 onChange={(event) =>
                   updateReflection(key, event.target.value ? Number(event.target.value) : null)}
@@ -318,6 +322,11 @@ export function SessionCompletionForm({
                   <option key={value} value={value}>{value} — {confidenceLabel(value)}</option>
                 ))}
               </select>
+              <small id={`${key}-help`}>
+                {key === "confidenceBefore"
+                  ? "How confident did you feel going into the session?"
+                  : "How confident did you feel after completing it?"}
+              </small>
             </label>
           ))}
         </div>

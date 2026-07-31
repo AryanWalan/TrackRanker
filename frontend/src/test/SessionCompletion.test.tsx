@@ -156,6 +156,8 @@ describe("session completion and reflection", () => {
     expect(screen.getByLabelText("What improved today?")).toBeInTheDocument();
     expect(screen.getByLabelText("What felt difficult?")).toBeInTheDocument();
     expect(screen.getByLabelText("What do you want to focus on next time?")).toBeInTheDocument();
+    expect(screen.getByText("How confident did you feel going into the session?")).toBeInTheDocument();
+    expect(screen.getByText("How confident did you feel after completing it?")).toBeInTheDocument();
   });
 
   it("validates the required ratings", async () => {

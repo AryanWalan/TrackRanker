@@ -5,7 +5,6 @@ const navigation = [
   { to: "/sessions", label: "Sessions" },
   { to: "/confidence", label: "Confidence" },
   { to: "/progress", label: "Progress" },
-  { to: "/profile", label: "Profile" },
 ];
 
 export function AppShell() {
@@ -13,7 +12,11 @@ export function AppShell() {
     <div className="app-shell">
       <header className="site-header">
         <a className="brand" href="/" aria-label="TrackRanker dashboard">
-          <span className="brand-mark" aria-hidden="true">TR</span>
+          <img
+            className="brand-logo"
+            src="/TrackRankerLogo.png"
+            alt="TrackRanker logo"
+          />
           <span>TrackRanker</span>
         </a>
         <nav aria-label="Primary navigation">

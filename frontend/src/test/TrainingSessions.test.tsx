@@ -118,8 +118,8 @@ describe("training sessions", () => {
     api.getTrainingSessions.mockResolvedValue([]);
     renderRoute("/sessions");
 
-    expect(await screen.findByRole("heading", { name: "No sessions yet." })).toBeInTheDocument();
-    expect(screen.getByText(/Add your first training session/)).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "No sessions logged yet." })).toBeInTheDocument();
+    expect(screen.getByText(/Log your first training session/)).toBeInTheDocument();
   });
 
   it("shows all sessions with default filters", async () => {
@@ -180,7 +180,7 @@ describe("training sessions", () => {
     expect(
       screen.getByRole("heading", { name: "No sessions match these filters." }),
     ).toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "No sessions yet." })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "No sessions logged yet." })).not.toBeInTheDocument();
     const clearButtons = screen.getAllByRole("button", { name: "Clear filters" });
     await user.click(clearButtons[clearButtons.length - 1]);
 
@@ -300,7 +300,7 @@ describe("training sessions", () => {
     await user.type(screen.getByLabelText(/What's the session/), "Unfinished work");
     await user.click(screen.getByRole("link", { name: "Sessions" }));
 
-    await screen.findByRole("heading", { name: "Training Sessions" });
+    await screen.findByRole("heading", { name: "Training history" });
     expect(useTrackRankerStore.getState().sessionDraft?.prescription).toBe(
       "Unfinished work",
     );

@@ -5,7 +5,6 @@ import { CompleteSessionPage } from "./pages/CompleteSessionPage";
 import { CreateSessionPage } from "./pages/CreateSessionPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { EditSessionPage } from "./pages/EditSessionPage";
-import { ProfilePage } from "./pages/ProfilePage";
 import { ProgressPage } from "./pages/ProgressPage";
 import { SessionDetailPage } from "./pages/SessionDetailPage";
 import { SessionsPage } from "./pages/SessionsPage";
@@ -22,7 +21,7 @@ export default function App() {
         <Route path="sessions/:id/complete" element={<CompleteSessionPage />} />
         <Route path="confidence" element={<ConfidencePage />} />
         <Route path="progress" element={<ProgressPage />} />
-        <Route path="profile" element={<ProfilePage />} />
+        <Route path="profile" element={<Navigate to="/" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
