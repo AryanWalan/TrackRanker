@@ -110,6 +110,9 @@ export function SessionDetailPage() {
         </div>
         <div className="detail-actions">
           <Link className="button secondary" to={`/sessions/${id}/edit`}>Edit Session</Link>
+          <Link className="button secondary" to={`/sessions/new?copy=${id}`}>
+            Repeat session
+          </Link>
           <button className="button danger" type="button" onClick={() => setConfirmingDelete(true)}>
             Delete Session
           </button>

@@ -38,6 +38,21 @@ const session: TrainingSession = {
   updatedAtUtc: "2026-07-29T00:00:00Z",
 };
 
+const completedSource: TrainingSession = {
+  ...session,
+  title: "Completed speed endurance",
+  coachNotes: "Stay patient between repetitions.",
+  status: "Completed",
+};
+
+function todayLocalDate() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function renderRoute(path: string) {
   return render(
     <MemoryRouter initialEntries={[path]}>
@@ -221,6 +236,117 @@ describe("training sessions", () => {
 
     expect(await screen.findByText(session.purpose!)).toBeInTheDocument();
     expect(screen.getByText(session.focusCue!)).toBeInTheDocument();
+  });
+
+  it("offers a Repeat session action for the current session", async () => {
+    renderRoute(`/sessions/${session.id}`);
+
+    expect(await screen.findByRole("link", { name: "Repeat session" })).toHaveAttribute(
+      "href",
+      `/sessions/new?copy=${session.id}`,
+    );
+  });
+
+  it("loads a previous session before showing the repeat form", async () => {
+    let resolveSource: ((value: TrainingSession) => void) | undefined;
+    api.getTrainingSession.mockReturnValue(
+      new Promise<TrainingSession>((resolve) => {
+        resolveSource = resolve;
+      }),
+    );
+    renderRoute(`/sessions/new?copy=${session.id}`);
+
+    expect(screen.getByRole("status")).toHaveTextContent("Loading previous session");
+    expect(screen.queryByRole("button", { name: "Create session" })).not.toBeInTheDocument();
+
+    resolveSource?.(completedSource);
+    expect(await screen.findByRole("button", { name: "Create session" })).toBeInTheDocument();
+  });
+
+  it("prefills only planned-session fields for a repeated session", async () => {
+    api.getTrainingSession.mockResolvedValue(completedSource);
+    renderRoute(`/sessions/new?copy=${session.id}`);
+
+    expect(await screen.findByText(/Starting from a previous session/)).toHaveTextContent(
+      completedSource.title,
+    );
+    expect(screen.getByLabelText(/Session type/)).toHaveValue(completedSource.sessionType);
+    expect(screen.getByLabelText(/What's the session/)).toHaveValue(
+      completedSource.prescription,
+    );
+    expect(screen.getByLabelText(/Planned intensity/)).toHaveValue(
+      completedSource.intendedIntensity,
+    );
+    expect(screen.getByLabelText(/Date/)).toHaveValue(todayLocalDate());
+    expect(screen.getByLabelText("Status")).toHaveValue("Planned");
+    expect(screen.getByLabelText(/Custom title/)).toHaveValue("");
+
+    expect(screen.getByRole("button", { name: /Add more clarity/ })).toHaveAttribute(
+      "aria-expanded",
+      "true",
+    );
+    expect(screen.getByLabelText("Purpose")).toHaveValue(completedSource.purpose);
+    expect(screen.getByLabelText("Focus cue")).toHaveValue(completedSource.focusCue);
+    expect(screen.getByLabelText("Success criteria")).toHaveValue(
+      completedSource.successCriteria,
+    );
+    expect(screen.getByLabelText("Coach notes")).toHaveValue(completedSource.coachNotes);
+    expect(api.getSessionCompletion).not.toHaveBeenCalled();
+  });
+
+  it("allows prefilled values to be edited and uses the normal create API", async () => {
+    const user = userEvent.setup();
+    api.getTrainingSession.mockResolvedValue(completedSource);
+    renderRoute(`/sessions/new?copy=${session.id}`);
+
+    const prescription = await screen.findByLabelText(/What's the session/);
+    await user.clear(prescription);
+    await user.type(prescription, "4 x 120m @ 88%");
+    await user.clear(screen.getByLabelText("Purpose"));
+    await user.type(screen.getByLabelText("Purpose"), "Build repeatable rhythm.");
+    await user.click(screen.getByRole("button", { name: "Create session" }));
+
+    await waitFor(() => expect(api.createTrainingSession).toHaveBeenCalledTimes(1));
+    expect(api.createTrainingSession).toHaveBeenCalledWith({
+      title: "",
+      sessionType: completedSource.sessionType,
+      sessionDate: todayLocalDate(),
+      prescription: "4 x 120m @ 88%",
+      purpose: "Build repeatable rhythm.",
+      focusCue: completedSource.focusCue,
+      successCriteria: completedSource.successCriteria,
+      intendedIntensity: completedSource.intendedIntensity,
+      coachNotes: completedSource.coachNotes,
+      status: "Planned",
+    });
+    const submitted = api.createTrainingSession.mock.calls[0][0];
+    expect(submitted).not.toHaveProperty("id");
+    expect(submitted).not.toHaveProperty("completion");
+    expect(submitted).not.toHaveProperty("reflection");
+  });
+
+  it("allows blank creation when the source session cannot be loaded", async () => {
+    const user = userEvent.setup();
+    api.getTrainingSession.mockRejectedValue(new Error("Missing"));
+    renderRoute("/sessions/new?copy=not-a-valid-id");
+
+    expect(
+      await screen.findByRole("heading", { name: "That session couldn't be loaded." }),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Create a blank session" }));
+
+    expect(screen.getByRole("button", { name: "Create session" })).toBeInTheDocument();
+    expect(screen.getByLabelText(/What's the session/)).toHaveValue("");
+    expect(screen.getByLabelText(/Date/)).toHaveValue("");
+    expect(screen.getByLabelText("Status")).toHaveValue("Planned");
+  });
+
+  it("does not load a source for normal session creation", () => {
+    renderRoute("/sessions/new");
+
+    expect(api.getTrainingSession).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "Create session" })).toBeInTheDocument();
+    expect(screen.getByLabelText(/Date/)).toHaveValue("");
   });
 
   it("requires confirmation before deleting", async () => {
