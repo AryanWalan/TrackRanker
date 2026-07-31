@@ -261,6 +261,32 @@ describe("session completion and reflection", () => {
     expect(api.getProgress).toHaveBeenCalledTimes(2);
   });
 
+  it("captures progress before creating a completion to avoid racing XP feedback", async () => {
+    const user = userEvent.setup();
+    let resolvePreviousProgress!: (value: Progress) => void;
+    const previousProgress = new Promise<Progress>((resolve) => {
+      resolvePreviousProgress = resolve;
+    });
+    api.getSessionCompletion.mockRejectedValue(new MockApiError("Missing", 404));
+    api.getProgress
+      .mockReturnValueOnce(previousProgress)
+      .mockResolvedValueOnce(progress(35));
+    renderRoute(`/sessions/${session.id}/complete`);
+
+    await user.selectOptions(await screen.findByLabelText(/Actual intensity/), "8");
+    await user.selectOptions(screen.getByLabelText(/Perceived difficulty/), "7");
+    await user.click(screen.getByRole("button", { name: "Log completed session" }));
+
+    await waitFor(() => expect(api.getProgress).toHaveBeenCalledTimes(1));
+    expect(api.createSessionCompletion).not.toHaveBeenCalled();
+
+    resolvePreviousProgress(progress(0));
+
+    expect(await screen.findByRole("heading", { name: "Progress earned" }))
+      .toBeInTheDocument();
+    expect(screen.getByText("+35 XP")).toBeInTheDocument();
+  });
+
   it("shows an unchanged update without prominent +0 XP", async () => {
     const user = userEvent.setup();
     api.getProgress.mockResolvedValue(progress(65));

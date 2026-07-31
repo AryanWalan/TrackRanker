@@ -61,7 +61,7 @@ export function CompleteSessionPage() {
         submitLabel={completion ? "Save completed session" : "Log completed session"}
         cancelTo={`/sessions/${id}`}
         onSubmit={async (input) => {
-          const previousProgressPromise: Promise<Progress | null> = getProgress()
+          const previousProgress: Progress | null = await getProgress()
             .catch(() => null);
           if (completion) {
             await updateSessionCompletion(id, input);
@@ -69,12 +69,8 @@ export function CompleteSessionPage() {
             await createSessionCompletion(id, input);
           }
 
-          const currentProgressPromise: Promise<Progress | null> = getProgress()
+          const currentProgress: Progress | null = await getProgress()
             .catch(() => null);
-          const [previousProgress, currentProgress] = await Promise.all([
-            previousProgressPromise,
-            currentProgressPromise,
-          ]);
           const newlyUnlockedAchievements = previousProgress && currentProgress
             ? currentProgress.achievements.filter((achievement) =>
                 achievement.isUnlocked

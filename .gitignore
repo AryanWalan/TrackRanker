@@ -7,6 +7,9 @@
 # Node and frontend output
 node_modules/
 frontend/dist/
+frontend/cypress/screenshots/
+frontend/cypress/videos/
+frontend/cypress/downloads/
 coverage/
 *.tsbuildinfo
 frontend/vite.config.js

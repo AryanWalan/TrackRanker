@@ -27,7 +27,7 @@ TrackRanker does not award XP for faster times, higher intensity, additional vol
 - Frontend: React, TypeScript, Vite, React Router, Zustand, Vitest, React Testing Library
 - Backend: C# 14, .NET 10 Web API controllers, OpenAPI, Scalar, xUnit
 - Database: MongoDB with the official MongoDB .NET driver
-- Local infrastructure: Docker Compose
+- Local infrastructure: MongoDB Windows service or Docker Compose
 
 ## Repository structure
 
@@ -54,7 +54,7 @@ docker-compose.yml
 - .NET SDK 10
 - Node.js 20.19+ or 22.12+
 - npm
-- Docker Desktop or another Docker Compose-compatible runtime
+- A MongoDB service; Docker Desktop is optional
 
 ## MongoDB setup
 
@@ -65,6 +65,8 @@ docker compose up -d mongodb
 ```
 
 MongoDB is exposed at `mongodb://localhost:27017` and stores data in the named `trackranker-mongodb-data` volume. Stop it with `docker compose down`.
+
+On Windows, a locally installed MongoDB service listening on `mongodb://127.0.0.1:27017` can be used instead. Docker is not required for local development or E2E testing when that service is available.
 
 ## Backend setup
 
@@ -103,12 +105,53 @@ npm run build
 
 Backend service tests use fake repositories, and frontend tests mock API calls. Neither automated suite requires a live MongoDB instance. Tests cover session workflows, confidence history, and deterministic progress calculations including XP, TrackRank boundaries, and achievements.
 
+The testing layers have distinct responsibilities:
+
+- xUnit verifies backend services and API boundaries in isolation.
+- Vitest and React Testing Library verify frontend components and interactions.
+- Cypress verifies a small set of critical workflows across the real browser, React app, .NET API, and MongoDB.
+
+### Cypress end-to-end tests
+
+Cypress requires Node.js, .NET 10, and a MongoDB service at `mongodb://127.0.0.1:27017`. It uses the dedicated `trackranker_e2e` database and must never be run against the normal `trackranker` database. Docker is not required.
+
+Start the services in three PowerShell terminals from the repository:
+
+Terminal 1:
+
+```powershell
+$env:MongoDb__ConnectionString = "mongodb://127.0.0.1:27017"
+$env:MongoDb__DatabaseName = "trackranker_e2e"
+$env:E2E__Enabled = "true"
+$env:Frontend__AllowedOrigin = "http://localhost:5173"
+dotnet run --project backend\TrackRanker.Api
+```
+
+Terminal 2:
+
+```powershell
+cd frontend
+npm run dev
+```
+
+Terminal 3:
+
+```powershell
+cd frontend
+npm run cy:run
+```
+
+Use `npm run cy:open` for the interactive runner or `npm run test:e2e` as an alias for the headless suite. The local frontend defaults to `http://localhost:5173` and the E2E API defaults to `http://localhost:5000`; CI or another environment can override these with `CYPRESS_BASE_URL` and `CYPRESS_API_URL`.
+
+Each scenario calls the guarded `POST /api/testing/reset` endpoint and clears only TrackRanker's persisted browser workspace state. The endpoint returns 404 unless `E2E__Enabled=true`, remains unavailable in Production even if that flag is set, accepts no database name, and the API refuses to start in non-production E2E mode unless the configured database name ends in `_e2e`.
+
 ## Environment variables
 
 | Variable | Development default | Purpose |
 | --- | --- | --- |
 | `MongoDb__ConnectionString` | `mongodb://localhost:27017` | MongoDB server connection |
 | `MongoDb__DatabaseName` | `trackranker` | MongoDB database name |
+| `E2E__Enabled` | `false` | Enables the guarded E2E reset route; only valid with an `_e2e` database |
 | `Frontend__AllowedOrigin` | `http://localhost:5173` | Allowed development CORS origin |
 | `VITE_API_BASE_URL` | `http://localhost:5000` | Frontend API base URL |
 
@@ -124,8 +167,8 @@ Production deployments must provide all backend values explicitly; no credential
    - Persists unfinished new-session drafts plus Sessions and Confidence filter preferences while keeping API data out of the store.
    - Status: **implemented**.
 3. **Cypress End-to-End Testing**
-   - Browser-level end-to-end coverage is reserved for a future milestone.
-   - Status: **planned**.
+   - Verifies onboarding and navigation, session creation, completion and reflection, confidence evidence, TrackRank progress, and Repeat Session through the real frontend, API, and isolated MongoDB database.
+   - Status: **implemented**.
 
 ## Initial deployment plan
 

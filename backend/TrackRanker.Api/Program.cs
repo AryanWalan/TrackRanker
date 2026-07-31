@@ -18,6 +18,19 @@ builder.Services
     .Bind(builder.Configuration.GetSection(MongoDbOptions.SectionName))
     .ValidateDataAnnotations()
     .ValidateOnStart();
+builder.Services
+    .AddOptions<E2eOptions>()
+    .Bind(builder.Configuration.GetSection(E2eOptions.SectionName));
+
+var e2eEnabled = !builder.Environment.IsProduction()
+    && builder.Configuration.GetValue<bool>($"{E2eOptions.SectionName}:Enabled");
+var configuredDatabaseName = builder.Configuration[
+    $"{MongoDbOptions.SectionName}:DatabaseName"];
+if (e2eEnabled && !E2eDataResetService.IsSafeDatabaseName(configuredDatabaseName))
+{
+    throw new InvalidOperationException(
+        "E2E mode requires MongoDb:DatabaseName to end with '_e2e'.");
+}
 
 builder.Services.AddSingleton<IMongoClient>(serviceProvider =>
 {
@@ -35,6 +48,7 @@ builder.Services.AddSingleton<ISessionCompletionRepository, MongoSessionCompleti
 builder.Services.AddScoped<ISessionCompletionService, SessionCompletionService>();
 builder.Services.AddScoped<IConfidenceHistoryService, ConfidenceHistoryService>();
 builder.Services.AddScoped<IProgressService, ProgressService>();
+builder.Services.AddScoped<IE2eDataResetService, E2eDataResetService>();
 
 var allowedOrigin = builder.Configuration["Frontend:AllowedOrigin"];
 if (string.IsNullOrWhiteSpace(allowedOrigin))
