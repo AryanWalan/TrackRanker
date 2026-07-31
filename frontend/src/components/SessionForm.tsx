@@ -12,6 +12,7 @@ interface SessionFormProps {
   submitLabel: string;
   cancelTo: string;
   onSubmit: (input: TrainingSessionInput) => Promise<void>;
+  onChange?: (input: TrainingSessionInput) => void;
 }
 
 const emptySession: TrainingSessionInput = {
@@ -45,6 +46,7 @@ export function SessionForm({
   submitLabel,
   cancelTo,
   onSubmit,
+  onChange,
 }: SessionFormProps) {
   const [values, setValues] = useState<TrainingSessionInput>(initialValue);
   const [clarityExpanded, setClarityExpanded] = useState(
@@ -57,21 +59,25 @@ export function SessionForm({
     key: K,
     value: TrainingSessionInput[K],
   ) {
-    setValues((current) => ({ ...current, [key]: value }));
+    const next = { ...values, [key]: value };
+    setValues(next);
+    onChange?.(next);
   }
 
   function useSuggestedClarity() {
     const preset = sessionClarityPresets[values.sessionType];
     if (!preset) return;
 
-    setValues((current) => ({
-      ...current,
-      purpose: current.purpose?.trim() ? current.purpose : preset.purpose,
-      focusCue: current.focusCue?.trim() ? current.focusCue : preset.focusCue,
-      successCriteria: current.successCriteria?.trim()
-        ? current.successCriteria
+    const next = {
+      ...values,
+      purpose: values.purpose?.trim() ? values.purpose : preset.purpose,
+      focusCue: values.focusCue?.trim() ? values.focusCue : preset.focusCue,
+      successCriteria: values.successCriteria?.trim()
+        ? values.successCriteria
         : preset.successCriteria,
-    }));
+    };
+    setValues(next);
+    onChange?.(next);
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {

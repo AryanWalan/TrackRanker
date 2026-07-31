@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { getConfidenceHistory } from "../services/trainingSessions";
+import { useTrackRankerStore } from "../stores/useTrackRankerStore";
 import type { ConfidenceHistory, ConfidenceHistoryEntry } from "../types/confidenceHistory";
 import { sessionTypes, type SessionType } from "../types/trainingSession";
 
@@ -158,7 +159,9 @@ function EvidenceCard({ entry }: { entry: ConfidenceHistoryEntry }) {
 export function ConfidencePage() {
   const [history, setHistory] = useState<ConfidenceHistory | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<SessionType | "All">("All");
+  const filter = useTrackRankerStore((state) => state.confidenceTypeFilter);
+  const setFilter = useTrackRankerStore((state) => state.setConfidenceTypeFilter);
+  const resetFilter = useTrackRankerStore((state) => state.resetConfidenceFilter);
 
   useEffect(() => {
     getConfidenceHistory()
@@ -221,6 +224,11 @@ export function ConfidencePage() {
               {sessionTypes.map((type) => <option key={type} value={type}>{typeLabels[type]}</option>)}
             </select>
           </label>
+          {filter !== "All" && (
+            <button className="button secondary" type="button" onClick={resetFilter}>
+              Clear confidence filter
+            </button>
+          )}
         </div>
         {visibleEntries.length > 0
           ? <div className="confidence-evidence-list">{visibleEntries.map((entry) => <EvidenceCard key={entry.trainingSessionId} entry={entry} />)}</div>

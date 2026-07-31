@@ -475,6 +475,35 @@ h2 {
   overflow-wrap: anywhere;
 }
 
+.draft-restored-status {
+  display: inline-block;
+  margin-bottom: 0;
+  padding: 0.35rem 0.6rem;
+  color: #3e511a !important;
+  background: #f0f5d2;
+  font-size: 0.85rem;
+  font-weight: 750;
+}
+
+.draft-actions {
+  margin: -0.75rem 0 1.25rem;
+}
+
+.draft-clear-confirmation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: 1rem;
+  background: #fff8f5;
+  border: 1px solid #efb5a8;
+}
+
+.draft-clear-confirmation h2,
+.draft-clear-confirmation p {
+  margin: 0;
+}
+
 .button {
   display: inline-flex;
   align-items: center;
@@ -553,6 +582,45 @@ h2 {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.1rem;
+}
+
+.session-filters {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.session-filters label {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 10rem;
+  font-size: 0.8rem;
+  font-weight: 750;
+}
+
+.session-filters select {
+  min-height: 2.8rem;
+  padding: 0.6rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid #b9c0b8;
+  font: inherit;
+}
+
+.session-result-count {
+  margin: 0 auto 0 0;
+  padding: 0.7rem 0;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.filtered-empty-state {
+  margin-top: 0;
 }
 
 .session-card {
@@ -1609,6 +1677,7 @@ progress {
   .page-heading,
   .detail-header,
   .confirm-panel,
+  .draft-clear-confirmation,
   .completed-session-heading,
   .progress-feedback-summary,
   .feedback-rank,
@@ -1643,6 +1712,20 @@ progress {
 
   .history-filter {
     width: 100%;
+  }
+
+  .session-filters {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .session-filters label,
+  .session-filters .button {
+    width: 100%;
+  }
+
+  .session-result-count {
+    margin-right: 0;
   }
 
   .detail-section:first-child {

@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { SessionForm } from "../components/SessionForm";
 import {
   createTrainingSession,
   getTrainingSession,
 } from "../services/trainingSessions";
+import { useTrackRankerStore } from "../stores/useTrackRankerStore";
 import type {
   TrainingSession,
   TrainingSessionInput,
@@ -44,6 +45,12 @@ export function CreateSessionPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const hasCopySource = searchParams.has("copy");
   const copyId = searchParams.get("copy") ?? "";
+  const sessionDraft = useTrackRankerStore((state) => state.sessionDraft);
+  const setSessionDraft = useTrackRankerStore((state) => state.setSessionDraft);
+  const clearSessionDraft = useTrackRankerStore((state) => state.clearSessionDraft);
+  const restoredDraftAtEntry = useRef(!hasCopySource && sessionDraft !== null);
+  const [confirmingClear, setConfirmingClear] = useState(false);
+  const [formVersion, setFormVersion] = useState(0);
   const [copyState, setCopyState] = useState<CopyState>(
     hasCopySource ? { status: "loading" } : { status: "blank" },
   );
@@ -62,10 +69,12 @@ export function CreateSessionPage() {
     getTrainingSession(copyId)
       .then((source) => {
         if (active) {
+          const initialValue = repeatInitialValue(source);
+          setSessionDraft(initialValue);
           setCopyState({
             status: "loaded",
             source,
-            initialValue: repeatInitialValue(source),
+            initialValue,
           });
         }
       })
@@ -78,7 +87,7 @@ export function CreateSessionPage() {
     return () => {
       active = false;
     };
-  }, [copyId, hasCopySource]);
+  }, [copyId, hasCopySource, setSessionDraft]);
 
   if (copyState.status === "loading") {
     return (
@@ -98,6 +107,7 @@ export function CreateSessionPage() {
             className="button primary"
             type="button"
             onClick={() => {
+              clearSessionDraft();
               setCopyState({ status: "blank" });
               setSearchParams({}, { replace: true });
             }}
@@ -122,16 +132,70 @@ export function CreateSessionPage() {
               Starting from a previous session: <strong>{copyState.source.title}</strong>
             </p>
           )}
+          {restoredDraftAtEntry.current && copyState.status === "blank" && (
+            <p className="draft-restored-status" role="status">Draft restored</p>
+          )}
         </div>
       </div>
+      {sessionDraft && (
+        <div className="draft-actions">
+          {!confirmingClear ? (
+            <button
+              className="button secondary"
+              type="button"
+              onClick={() => setConfirmingClear(true)}
+            >
+              Clear draft
+            </button>
+          ) : (
+            <div
+              className="draft-clear-confirmation"
+              role="alertdialog"
+              aria-labelledby="clear-draft-title"
+            >
+              <div>
+                <h2 id="clear-draft-title">Clear this session draft?</h2>
+                <p>Your unsaved session details will be removed from this browser.</p>
+              </div>
+              <div className="form-actions">
+                <button
+                  className="button danger"
+                  type="button"
+                  onClick={() => {
+                    clearSessionDraft();
+                    setConfirmingClear(false);
+                    setCopyState({ status: "blank" });
+                    setSearchParams({}, { replace: true });
+                    setFormVersion((version) => version + 1);
+                  }}
+                >
+                  Confirm clear draft
+                </button>
+                <button
+                  className="button secondary"
+                  type="button"
+                  onClick={() => setConfirmingClear(false)}
+                >
+                  Keep draft
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
       <SessionForm
+        key={formVersion}
         initialValue={
-          copyState.status === "loaded" ? copyState.initialValue : undefined
+          copyState.status === "loaded"
+            ? copyState.initialValue
+            : sessionDraft ?? undefined
         }
         submitLabel="Create session"
         cancelTo="/sessions"
+        onChange={setSessionDraft}
         onSubmit={async (input) => {
           const session = await createTrainingSession(input);
+          clearSessionDraft();
           navigate(`/sessions/${session.id}`);
         }}
       />

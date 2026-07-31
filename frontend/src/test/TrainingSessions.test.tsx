@@ -3,7 +3,11 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import App from "../App";
-import type { TrainingSession } from "../types/trainingSession";
+import { useTrackRankerStore } from "../stores/useTrackRankerStore";
+import type {
+  TrainingSession,
+  TrainingSessionInput,
+} from "../types/trainingSession";
 
 const api = vi.hoisted(() => ({
   getTrainingSessions: vi.fn(),
@@ -44,6 +48,36 @@ const completedSource: TrainingSession = {
   coachNotes: "Stay patient between repetitions.",
   status: "Completed",
 };
+
+const savedDraft: TrainingSessionInput = {
+  title: "Track draft",
+  sessionType: "Tempo",
+  sessionDate: "2026-08-20",
+  prescription: "8 x 200m",
+  purpose: "Controlled conditioning.",
+  focusCue: null,
+  successCriteria: null,
+  intendedIntensity: 70,
+  coachNotes: null,
+  status: "Planned",
+};
+
+const filterSessions: TrainingSession[] = [
+  session,
+  {
+    ...session,
+    id: "507f1f77bcf86cd799439012",
+    title: "Completed tempo",
+    sessionType: "Tempo",
+    status: "Completed",
+  },
+  {
+    ...session,
+    id: "507f1f77bcf86cd799439013",
+    title: "Completed speed endurance",
+    status: "Completed",
+  },
+];
 
 function todayLocalDate() {
   const today = new Date();
@@ -86,6 +120,84 @@ describe("training sessions", () => {
 
     expect(await screen.findByRole("heading", { name: "No sessions yet." })).toBeInTheDocument();
     expect(screen.getByText(/Add your first training session/)).toBeInTheDocument();
+  });
+
+  it("shows all sessions with default filters", async () => {
+    api.getTrainingSessions.mockResolvedValue(filterSessions);
+    renderRoute("/sessions");
+
+    expect(await screen.findByText("3 sessions")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Speed endurance" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Completed tempo" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Completed speed endurance" })).toBeInTheDocument();
+  });
+
+  it("filters sessions by type", async () => {
+    const user = userEvent.setup();
+    api.getTrainingSessions.mockResolvedValue(filterSessions);
+    renderRoute("/sessions");
+
+    await user.selectOptions(await screen.findByLabelText("Type"), "Tempo");
+
+    expect(screen.getByRole("heading", { name: "Completed tempo" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Speed endurance" })).not.toBeInTheDocument();
+  });
+
+  it("filters sessions by status", async () => {
+    const user = userEvent.setup();
+    api.getTrainingSessions.mockResolvedValue(filterSessions);
+    renderRoute("/sessions");
+
+    await user.selectOptions(await screen.findByLabelText("Status"), "Completed");
+
+    expect(screen.getByText("2 sessions")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Speed endurance" })).not.toBeInTheDocument();
+  });
+
+  it("combines type and status filters", async () => {
+    const user = userEvent.setup();
+    api.getTrainingSessions.mockResolvedValue(filterSessions);
+    renderRoute("/sessions");
+
+    await user.selectOptions(await screen.findByLabelText("Type"), "SpeedEndurance");
+    await user.selectOptions(screen.getByLabelText("Status"), "Completed");
+
+    expect(screen.getByText("1 session")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Completed speed endurance" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Speed endurance" })).not.toBeInTheDocument();
+  });
+
+  it("distinguishes a filtered empty state and clears filters", async () => {
+    const user = userEvent.setup();
+    api.getTrainingSessions.mockResolvedValue(filterSessions);
+    renderRoute("/sessions");
+
+    await user.selectOptions(await screen.findByLabelText("Type"), "Tempo");
+    await user.selectOptions(screen.getByLabelText("Status"), "Planned");
+
+    expect(
+      screen.getByRole("heading", { name: "No sessions match these filters." }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "No sessions yet." })).not.toBeInTheDocument();
+    const clearButtons = screen.getAllByRole("button", { name: "Clear filters" });
+    await user.click(clearButtons[clearButtons.length - 1]);
+
+    expect(await screen.findByText("3 sessions")).toBeInTheDocument();
+  });
+
+  it("keeps session filters when opening a session and returning", async () => {
+    const user = userEvent.setup();
+    api.getTrainingSessions.mockResolvedValue(filterSessions);
+    renderRoute("/sessions");
+
+    await user.selectOptions(await screen.findByLabelText("Type"), "SpeedEndurance");
+    await user.click(screen.getByRole("link", { name: "Speed endurance" }));
+    await user.click(await screen.findByRole("link", { name: /Back to Sessions/ }));
+
+    expect(await screen.findByLabelText("Type")).toHaveValue("SpeedEndurance");
+    expect(screen.queryByRole("heading", { name: "Completed tempo" })).not.toBeInTheDocument();
   });
 
   it("shows the essential fields first on the create form", () => {
@@ -143,6 +255,71 @@ describe("training sessions", () => {
     );
   });
 
+  it("updates the new-session draft as the form changes", async () => {
+    const user = userEvent.setup();
+    renderRoute("/sessions/new");
+
+    await user.type(screen.getByLabelText(/What's the session/), "4 x 60m");
+    await user.type(screen.getByLabelText(/Planned intensity/), "90");
+
+    expect(useTrackRankerStore.getState().sessionDraft).toMatchObject({
+      prescription: "4 x 60m",
+      intendedIntensity: 90,
+      status: "Planned",
+    });
+  });
+
+  it("restores an existing draft into normal session creation", () => {
+    useTrackRankerStore.getState().setSessionDraft(savedDraft);
+
+    renderRoute("/sessions/new");
+
+    expect(screen.getByRole("status")).toHaveTextContent("Draft restored");
+    expect(screen.getByLabelText(/Session type/)).toHaveValue("Tempo");
+    expect(screen.getByLabelText(/What's the session/)).toHaveValue("8 x 200m");
+    expect(screen.getByLabelText(/Planned intensity/)).toHaveValue(70);
+  });
+
+  it("clears the draft after successful session creation", async () => {
+    const user = userEvent.setup();
+    useTrackRankerStore.getState().setSessionDraft(savedDraft);
+    renderRoute("/sessions/new");
+
+    await user.click(screen.getByRole("button", { name: "Create session" }));
+
+    await waitFor(() =>
+      expect(useTrackRankerStore.getState().sessionDraft).toBeNull(),
+    );
+    expect(api.createTrainingSession).toHaveBeenCalledWith(savedDraft);
+  });
+
+  it("keeps the draft when navigating away", async () => {
+    const user = userEvent.setup();
+    renderRoute("/sessions/new");
+
+    await user.type(screen.getByLabelText(/What's the session/), "Unfinished work");
+    await user.click(screen.getByRole("link", { name: "Sessions" }));
+
+    await screen.findByRole("heading", { name: "Training Sessions" });
+    expect(useTrackRankerStore.getState().sessionDraft?.prescription).toBe(
+      "Unfinished work",
+    );
+  });
+
+  it("clears a draft only after confirmation and resets the form", async () => {
+    const user = userEvent.setup();
+    useTrackRankerStore.getState().setSessionDraft(savedDraft);
+    renderRoute("/sessions/new");
+
+    await user.click(screen.getByRole("button", { name: "Clear draft" }));
+    expect(useTrackRankerStore.getState().sessionDraft).toEqual(savedDraft);
+    await user.click(screen.getByRole("button", { name: "Confirm clear draft" }));
+
+    expect(useTrackRankerStore.getState().sessionDraft).toBeNull();
+    expect(screen.getByLabelText(/What's the session/)).toHaveValue("");
+    expect(screen.getByLabelText(/Date/)).toHaveValue("");
+  });
+
   it("fills empty fields with suggested clarity", async () => {
     const user = userEvent.setup();
     renderRoute("/sessions/new");
@@ -197,6 +374,19 @@ describe("training sessions", () => {
       "aria-expanded",
       "true",
     );
+  });
+
+  it("keeps edit mode isolated from the new-session draft", async () => {
+    const user = userEvent.setup();
+    useTrackRankerStore.getState().setSessionDraft(savedDraft);
+    renderRoute(`/sessions/${session.id}/edit`);
+
+    const prescription = await screen.findByLabelText(/What's the session/);
+    expect(prescription).toHaveValue(session.prescription);
+    await user.clear(prescription);
+    await user.type(prescription, "Edited API session");
+
+    expect(useTrackRankerStore.getState().sessionDraft).toEqual(savedDraft);
   });
 
   it("submits an optional custom title", async () => {
@@ -292,6 +482,26 @@ describe("training sessions", () => {
     );
     expect(screen.getByLabelText("Coach notes")).toHaveValue(completedSource.coachNotes);
     expect(api.getSessionCompletion).not.toHaveBeenCalled();
+  });
+
+  it("replaces an unrelated draft when repeating a session", async () => {
+    useTrackRankerStore.getState().setSessionDraft(savedDraft);
+    api.getTrainingSession.mockResolvedValue(completedSource);
+    renderRoute(`/sessions/new?copy=${session.id}`);
+
+    await screen.findByText(/Starting from a previous session/);
+    expect(useTrackRankerStore.getState().sessionDraft).toEqual({
+      title: "",
+      sessionType: completedSource.sessionType,
+      sessionDate: todayLocalDate(),
+      prescription: completedSource.prescription,
+      purpose: completedSource.purpose,
+      focusCue: completedSource.focusCue,
+      successCriteria: completedSource.successCriteria,
+      intendedIntensity: completedSource.intendedIntensity,
+      coachNotes: completedSource.coachNotes,
+      status: "Planned",
+    });
   });
 
   it("allows prefilled values to be edited and uses the normal create API", async () => {

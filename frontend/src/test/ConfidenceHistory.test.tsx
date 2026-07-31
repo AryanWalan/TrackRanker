@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import App from "../App";
+import { useTrackRankerStore } from "../stores/useTrackRankerStore";
 import type { ConfidenceHistory } from "../types/confidenceHistory";
 
 const api = vi.hoisted(() => ({
@@ -130,6 +131,46 @@ describe("confidence history", () => {
     await user.selectOptions(screen.getByLabelText("Session type"), "Acceleration");
     expect(screen.getByText("Block starts")).toBeInTheDocument();
     expect(screen.queryByText("Speed Endurance — 3 × 150m")).not.toBeInTheDocument();
+  });
+
+  it("reads the selected filter from Zustand", async () => {
+    useTrackRankerStore.getState().setConfidenceTypeFilter("Acceleration");
+    renderPage();
+
+    expect(await screen.findByLabelText("Session type")).toHaveValue("Acceleration");
+    expect(screen.getByText("Block starts")).toBeInTheDocument();
+    expect(screen.queryByText("Fly work")).not.toBeInTheDocument();
+  });
+
+  it("keeps the confidence filter across unmount and remount", async () => {
+    const user = userEvent.setup();
+    const firstRender = renderPage();
+    await user.selectOptions(
+      await screen.findByLabelText("Session type"),
+      "MaxVelocity",
+    );
+    firstRender.unmount();
+
+    renderPage();
+
+    expect(await screen.findByLabelText("Session type")).toHaveValue("MaxVelocity");
+    expect(screen.getByText("Fly work")).toBeInTheDocument();
+    expect(screen.queryByText("Block starts")).not.toBeInTheDocument();
+  });
+
+  it("resets the confidence filter to All", async () => {
+    const user = userEvent.setup();
+    useTrackRankerStore.getState().setConfidenceTypeFilter("Acceleration");
+    renderPage();
+
+    await screen.findByText("Block starts");
+    await user.click(
+      screen.getByRole("button", { name: "Clear confidence filter" }),
+    );
+
+    expect(screen.getByLabelText("Session type")).toHaveValue("All");
+    expect(screen.getByText("Fly work")).toBeInTheDocument();
+    expect(useTrackRankerStore.getState().confidenceTypeFilter).toBe("All");
   });
 
   it("links evidence to the source session", async () => {

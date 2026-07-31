@@ -12,7 +12,7 @@ Competitive sprint athletes working with a coach, initially focused on the 100m,
 
 TrackRanker now includes process-based XP, personal TrackRank levels, and six achievements derived from stored session completions. After a completion is saved, athletes receive immediate feedback for backend-derived XP, rank, and newly unlocked achievement changes. The Progress page makes the rules and process totals transparent, while the Dashboard includes a small TrackRank summary alongside recent training.
 
-Streamlined planned-session entry includes a Repeat session action that starts a new, independent planned workout from a previous prescription and clarity details. Completed-session reflection and evidence-based Confidence History remain available. Authentication, athlete profiles, leaderboards, athlete comparison, advanced analytics, and AI-generated encouragement are not implemented.
+Streamlined planned-session entry includes a Repeat session action and a Zustand-persisted unfinished draft. Session-list and Confidence filters also persist across navigation and refresh without storing server responses in client state. Completed-session reflection and evidence-based Confidence History remain available. Authentication, athlete profiles, leaderboards, athlete comparison, advanced analytics, and AI-generated encouragement are not implemented.
 
 ## TrackRank gamification
 
@@ -22,7 +22,7 @@ TrackRanker does not award XP for faster times, higher intensity, additional vol
 
 ## Technology stack
 
-- Frontend: React, TypeScript, Vite, React Router, Vitest, React Testing Library
+- Frontend: React, TypeScript, Vite, React Router, Zustand, Vitest, React Testing Library
 - Backend: C# 14, .NET 10 Web API controllers, OpenAPI, Scalar, xUnit
 - Database: MongoDB with the official MongoDB .NET driver
 - Local infrastructure: Docker Compose
@@ -111,6 +111,19 @@ Backend service tests use fake repositories, and frontend tests mock API calls. 
 | `VITE_API_BASE_URL` | `http://localhost:5000` | Frontend API base URL |
 
 Production deployments must provide all backend values explicitly; no credentials are committed.
+
+## Advanced Requirements Selected
+
+1. **Security Measures**
+   - Data validation and sanitisation: implemented at existing API and service boundaries; broader security work remains partial.
+   - Rate limiting: planned.
+   - Status: **partially implemented**.
+2. **Zustand State Management**
+   - Persists unfinished new-session drafts plus Sessions and Confidence filter preferences while keeping API data out of the store.
+   - Status: **implemented**.
+3. **Cypress End-to-End Testing**
+   - Browser-level end-to-end coverage is reserved for a future milestone.
+   - Status: **planned**.
 
 ## Initial deployment plan
 
