@@ -250,6 +250,13 @@ h2 {
   margin-bottom: 0;
 }
 
+.dashboard-section-support {
+  max-width: 52ch;
+  margin: 0.8rem 0 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
 .dashboard-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -269,6 +276,16 @@ h2 {
 .dashboard-start {
   background: var(--surface);
   border-top: 4px solid var(--track);
+}
+
+.dashboard-progress {
+  margin-top: clamp(0.5rem, 2vw, 1.5rem);
+  background: #e5eae3;
+  border: 1px solid #cdd5ca;
+}
+
+.dashboard-progress > .dashboard-section-heading {
+  margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
 }
 
 .dashboard-workflow-heading .eyebrow,
@@ -395,10 +412,15 @@ h2 {
   border-left: 5px solid var(--lime);
 }
 
-.dashboard-rank h2,
+.dashboard-rank h3,
 .dashboard-rank .eyebrow,
 .dashboard-rank p {
   margin: 0;
+}
+
+.dashboard-rank h3 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  letter-spacing: -0.03em;
 }
 
 .dashboard-rank .eyebrow {

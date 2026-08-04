@@ -118,6 +118,9 @@ export function DashboardPage() {
         <div className="dashboard-section-heading">
           <p className="eyebrow">What do I do?</p>
           <h2 id="dashboard-start-title">Start training</h2>
+          <p className="dashboard-section-support">
+            Log what you're doing today or look back at sessions you've already recorded.
+          </p>
         </div>
         <nav className="dashboard-actions" aria-label="Dashboard quick actions">
           <Link className="dashboard-action primary-action" to="/sessions/new">
@@ -132,29 +135,38 @@ export function DashboardPage() {
       </section>
 
       <section
-        className="dashboard-section dashboard-rank"
-        aria-labelledby="dashboard-rank-title"
+        className="dashboard-section dashboard-progress"
+        aria-labelledby="dashboard-progress-title"
       >
-        <div>
-          <p className="eyebrow">Training process</p>
-          <h2 id="dashboard-rank-title">
-            {progress ? `TrackRank ${progress.trackRank}` : "TrackRank"}
-          </h2>
-          <p className="dashboard-rank-context">
-            Engagement with your training process, not sprint ability.
+        <div className="dashboard-section-heading">
+          <p className="eyebrow">How am I progressing?</p>
+          <h2 id="dashboard-progress-title">Your training progress</h2>
+          <p className="dashboard-section-support">
+            TrackRank rewards completing sessions, reflecting, and checking in with your confidence.
           </p>
         </div>
-        {!progress && !progressError && <p role="status">Calculating progress…</p>}
-        {progressError && <p>Progress is unavailable right now.</p>}
-        {progress && (
-          <>
-            <div className="dashboard-rank-values">
-              <strong>{progress.totalXp} XP</strong>
-              <span>{progress.currentRankXp} / {progress.xpPerRank} to next rank</span>
-            </div>
-            <Link className="button secondary" to="/progress">View progress</Link>
-          </>
-        )}
+        <div className="dashboard-rank" aria-labelledby="dashboard-rank-title">
+          <div>
+            <p className="eyebrow">Training process</p>
+            <h3 id="dashboard-rank-title">
+              {progress ? `TrackRank ${progress.trackRank}` : "TrackRank"}
+            </h3>
+            <p className="dashboard-rank-context">
+              Engagement with your training process, not sprint ability.
+            </p>
+          </div>
+          {!progress && !progressError && <p role="status">Calculating progress…</p>}
+          {progressError && <p>Progress is unavailable right now.</p>}
+          {progress && (
+            <>
+              <div className="dashboard-rank-values">
+                <strong>{progress.totalXp} XP</strong>
+                <span>{progress.currentRankXp} / {progress.xpPerRank} to next rank</span>
+              </div>
+              <Link className="button secondary" to="/progress">View progress</Link>
+            </>
+          )}
+        </div>
       </section>
 
       <section

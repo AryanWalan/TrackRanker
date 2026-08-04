@@ -86,8 +86,14 @@ describe("Dashboard", () => {
     expect(screen.getByRole("region", { name: "TrackRanker" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "How TrackRanker works" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Start training" })).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "TrackRank" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Your training progress" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Recent training" })).toBeInTheDocument();
+    expect(screen.getByText(
+      "Log what you're doing today or look back at sessions you've already recorded.",
+    )).toBeInTheDocument();
+    expect(screen.getByText(
+      "TrackRank rewards completing sessions, reflecting, and checking in with your confidence.",
+    )).toBeInTheDocument();
   });
 
   it("links Log a session to session creation", () => {
@@ -176,7 +182,8 @@ describe("Dashboard", () => {
       achievements: [],
     });
     renderDashboard();
-    expect(await screen.findByRole("heading", { name: "TrackRank 2" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "TrackRank 2", level: 3 }))
+      .toBeInTheDocument();
     expect(screen.getByText("120 XP")).toBeInTheDocument();
     expect(screen.getByText("20 / 100 to next rank")).toBeInTheDocument();
   });
