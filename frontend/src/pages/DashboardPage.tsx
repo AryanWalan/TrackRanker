@@ -62,18 +62,26 @@ export function DashboardPage() {
   );
 
   return (
-    <section className="dashboard-page">
-      <header className="hero" aria-labelledby="dashboard-title">
-        <p className="eyebrow">For 100m, 200m and 400m sprinters</p>
-        <h1 id="dashboard-title">TrackRanker</h1>
-        <p className="tagline">Training clarity and confidence for 100m, 200m and 400m sprinters.</p>
-        <p className="hero-support">
-          Log what your coach gives you, understand your sessions, reflect on how they went,
-          and build confidence from your own training.
-        </p>
-      </header>
+    <div className="dashboard-page">
+      <section
+        className="dashboard-section dashboard-introduction"
+        aria-labelledby="dashboard-title"
+      >
+        <header className="hero">
+          <p className="eyebrow">For 100m, 200m and 400m sprinters</p>
+          <h1 id="dashboard-title">TrackRanker</h1>
+          <p className="tagline">Training clarity and confidence for 100m, 200m and 400m sprinters.</p>
+          <p className="hero-support">
+            Log what your coach gives you, understand your sessions, reflect on how they went,
+            and build confidence from your own training.
+          </p>
+        </header>
+      </section>
 
-      <section className="dashboard-workflow" aria-labelledby="dashboard-workflow-title">
+      <section
+        className="dashboard-section dashboard-workflow"
+        aria-labelledby="dashboard-workflow-title"
+      >
         <div className="dashboard-workflow-heading">
           <p className="eyebrow">Start here</p>
           <h2 id="dashboard-workflow-title">How TrackRanker works</h2>
@@ -103,18 +111,30 @@ export function DashboardPage() {
         </ol>
       </section>
 
-      <nav className="dashboard-actions" aria-label="Dashboard quick actions">
-        <Link className="dashboard-action primary-action" to="/sessions/new">
-          <span>Log a session</span>
-          <small>Add today's or an upcoming training session.</small>
-        </Link>
-        <Link className="dashboard-action" to="/sessions">
-          <span>Training history</span>
-          <small>View, repeat, and manage sessions you've already logged.</small>
-        </Link>
-      </nav>
+      <section
+        className="dashboard-section dashboard-start"
+        aria-labelledby="dashboard-start-title"
+      >
+        <div className="dashboard-section-heading">
+          <p className="eyebrow">What do I do?</p>
+          <h2 id="dashboard-start-title">Start training</h2>
+        </div>
+        <nav className="dashboard-actions" aria-label="Dashboard quick actions">
+          <Link className="dashboard-action primary-action" to="/sessions/new">
+            <span>Log a session</span>
+            <small>Add today's or an upcoming training session.</small>
+          </Link>
+          <Link className="dashboard-action" to="/sessions">
+            <span>Training history</span>
+            <small>View, repeat, and manage sessions you've already logged.</small>
+          </Link>
+        </nav>
+      </section>
 
-      <section className="dashboard-rank" aria-labelledby="dashboard-rank-title">
+      <section
+        className="dashboard-section dashboard-rank"
+        aria-labelledby="dashboard-rank-title"
+      >
         <div>
           <p className="eyebrow">Training process</p>
           <h2 id="dashboard-rank-title">
@@ -137,7 +157,10 @@ export function DashboardPage() {
         )}
       </section>
 
-      <section className="recent-training" aria-labelledby="recent-training-title">
+      <section
+        className="dashboard-section recent-training"
+        aria-labelledby="recent-training-title"
+      >
         <div className="recent-training-heading">
           <div>
             <p className="eyebrow">Training snapshot</p>
@@ -189,11 +212,11 @@ export function DashboardPage() {
             ))}
           </div>
         )}
-      </section>
 
-      <aside className="system-status" aria-label="System status">
-        <HealthStatus />
-      </aside>
-    </section>
+        <aside className="system-status" aria-label="System status">
+          <HealthStatus />
+        </aside>
+      </section>
+    </div>
   );
 }

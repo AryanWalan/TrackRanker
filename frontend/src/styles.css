@@ -224,12 +224,38 @@ h2 {
   letter-spacing: 0.12em;
 }
 
+.dashboard-page {
+  display: grid;
+  gap: clamp(1.75rem, 5vw, 3.75rem);
+}
+
+.dashboard-section {
+  padding: clamp(1.75rem, 5vw, 3.5rem);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.dashboard-introduction {
+  padding: 0;
+  background: var(--ink);
+  border: 0;
+}
+
+.dashboard-section-heading {
+  margin-bottom: clamp(1.25rem, 3vw, 2rem);
+}
+
+.dashboard-section-heading .eyebrow,
+.dashboard-section-heading h2 {
+  margin-bottom: 0;
+}
+
 .dashboard-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
   width: 100%;
-  margin: 1.25rem 0;
+  margin: 0;
   overflow: visible;
 }
 
@@ -237,10 +263,14 @@ h2 {
   display: grid;
   grid-template-columns: minmax(12rem, 0.6fr) minmax(0, 1.4fr);
   gap: clamp(1.5rem, 4vw, 3rem);
-  margin-top: 1.25rem;
   padding: clamp(1.25rem, 4vw, 2rem);
-  background: var(--surface);
+  background: #eef1ec;
   border: 1px solid var(--line);
+}
+
+.dashboard-start {
+  background: var(--surface);
+  border-top: 4px solid var(--track);
 }
 
 .dashboard-workflow-heading .eyebrow,
@@ -327,7 +357,7 @@ h2 {
 
 .recent-training {
   padding: clamp(1.25rem, 4vw, 2rem);
-  background: var(--surface);
+  background: #eef1ec;
   border: 1px solid var(--line);
 }
 
@@ -335,8 +365,7 @@ h2 {
   display: flex;
   align-items: center;
   gap: 1.25rem;
-  margin-bottom: 1.25rem;
-  padding: 1.2rem 1.4rem;
+  padding: clamp(1.75rem, 5vw, 3rem);
   color: white;
   background: var(--ink);
   border-left: 5px solid var(--lime);

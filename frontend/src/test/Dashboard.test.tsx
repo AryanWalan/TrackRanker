@@ -79,6 +79,17 @@ describe("Dashboard", () => {
     expect(screen.getByRole("heading", { name: "Build confidence" })).toBeInTheDocument();
   });
 
+  it("separates the dashboard into five labelled vertical sections", () => {
+    api.getTrainingSessions.mockImplementation(() => new Promise(() => {}));
+    renderDashboard();
+
+    expect(screen.getByRole("region", { name: "TrackRanker" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "How TrackRanker works" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Start training" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "TrackRank" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Recent training" })).toBeInTheDocument();
+  });
+
   it("links Log a session to session creation", () => {
     api.getTrainingSessions.mockImplementation(() => new Promise(() => {}));
     renderDashboard();
