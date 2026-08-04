@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 
 const navigation = [
   { to: "/", label: "Dashboard", end: true },
@@ -8,6 +8,8 @@ const navigation = [
 ];
 
 export function AppShell() {
+  const { pathname } = useLocation();
+
   return (
     <div className="app-shell">
       <header className="site-header">
@@ -35,7 +37,7 @@ export function AppShell() {
           </ul>
         </nav>
       </header>
-      <main className="page-content">
+      <main className={pathname === "/" ? "page-content page-content--dashboard" : "page-content"}>
         <Outlet />
       </main>
       <footer>
