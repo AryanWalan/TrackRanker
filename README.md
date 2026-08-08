@@ -160,6 +160,9 @@ Each scenario calls the guarded `POST /api/testing/reset` endpoint and clears on
 | `MongoDb__UseTransactions` | `false` | Disables EF automatic transactions for local standalone MongoDB; use `true` only with a transaction-capable deployment |
 | `E2E__Enabled` | `false` | Enables the guarded E2E reset route; only valid with an `_e2e` database |
 | `Frontend__AllowedOrigin` | `http://localhost:5173` | Allowed development CORS origin |
+| `RateLimiting__ApiPermitLimit` | `120` | Maximum public API requests per client/IP in each window |
+| `RateLimiting__WritePermitLimit` | `30` | Maximum session/completion writes per client/IP in each window |
+| `RateLimiting__WindowSeconds` | `60` | Fixed rate-limit window length |
 | `VITE_API_BASE_URL` | `http://localhost:5000` | Frontend API base URL |
 
 Production deployments must provide all backend values explicitly; no credentials are committed.
@@ -171,15 +174,19 @@ Entity Framework Core is implemented as the real application persistence layer t
 ## Advanced Requirements Selected
 
 1. **Security Measures**
-   - Data validation and sanitisation: implemented at existing API and service boundaries; broader security work remains partial.
-   - Rate limiting: planned.
-   - Status: **partially implemented**.
+   - **Data validation / sanitisation:** API DTOs and services enforce required values, controlled enums, ranges, and maximum lengths. Required text cannot become empty after trimming, while whitespace-only optional fields become `null`. This protects the integrity of athlete-entered evidence without damaging valid notation such as `3 × 150m`, percentages, dashes, or punctuation.
+   - **Rate limiting:** ASP.NET Core's built-in fixed-window middleware allows 120 normal API requests and 30 writes per minute per client/IP. Session and completion writes use the stricter policy; excessive traffic receives HTTP 429 with safe, understandable wording. This limits automated resource consumption and repeated public writes while TrackRanker has no accounts.
+   - Status: **implemented**.
 2. **Zustand State Management**
    - Persists unfinished new-session drafts plus Sessions and Confidence filter preferences while keeping API data out of the store.
    - Status: **implemented**.
 3. **Cypress End-to-End Testing**
    - Verifies onboarding and navigation, session creation, completion and reflection, confidence evidence, TrackRank progress, and Repeat Session through the real frontend, API, and isolated MongoDB database.
    - Status: **implemented**.
+
+### Dependency security note
+
+Dependency auditing is maintained separately and is not counted as one of the two selected Security Measures. The current `npm audit` reports one high-severity transitive finding in `nanoid` 3.3.16 through Vite's PostCSS build-tooling path. TrackRanker does not call the affected custom-generator API directly, and a patched transitive version is available. This focused milestone does not apply a forced or unrelated dependency upgrade; the finding remains recorded for the final dependency-maintenance review.
 
 ## Initial deployment plan
 

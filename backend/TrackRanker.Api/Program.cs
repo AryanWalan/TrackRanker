@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Threading.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
@@ -6,6 +8,7 @@ using TrackRanker.Api.Configuration;
 using TrackRanker.Api.Data;
 using TrackRanker.Api.Infrastructure;
 using TrackRanker.Api.Repositories;
+using TrackRanker.Api.Security;
 using TrackRanker.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,6 +27,45 @@ builder.Services
 builder.Services
     .AddOptions<E2eOptions>()
     .Bind(builder.Configuration.GetSection(E2eOptions.SectionName));
+builder.Services
+    .AddOptions<ApiRateLimitingOptions>()
+    .Bind(builder.Configuration.GetSection(ApiRateLimitingOptions.SectionName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+var rateLimits = builder.Configuration
+    .GetSection(ApiRateLimitingOptions.SectionName)
+    .Get<ApiRateLimitingOptions>() ?? new ApiRateLimitingOptions();
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+        {
+            context.HttpContext.Response.Headers.RetryAfter = Math.Ceiling(
+                retryAfter.TotalSeconds).ToString(CultureInfo.InvariantCulture);
+        }
+
+        await context.HttpContext.Response.WriteAsJsonAsync(
+            new { error = "Too many requests. Please try again shortly." },
+            cancellationToken);
+    };
+
+    options.AddPolicy(RateLimitPolicyNames.Api, httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            GetClientPartitionKey(httpContext),
+            _ => CreateFixedWindowOptions(
+                rateLimits.ApiPermitLimit,
+                rateLimits.WindowSeconds)));
+    options.AddPolicy(RateLimitPolicyNames.Write, httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            GetClientPartitionKey(httpContext),
+            _ => CreateFixedWindowOptions(
+                rateLimits.WritePermitLimit,
+                rateLimits.WindowSeconds)));
+});
 
 var e2eEnabled = !builder.Environment.IsProduction()
     && builder.Configuration.GetValue<bool>($"{E2eOptions.SectionName}:Enabled");
@@ -79,12 +121,35 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
-    app.UseCors("Frontend");
 }
 
 app.UseHttpsRedirection();
+app.UseRouting();
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("Frontend");
+}
+app.UseRateLimiter();
 app.MapControllers();
 
 app.Run();
+
+static string GetClientPartitionKey(HttpContext context)
+{
+    return context.Connection.RemoteIpAddress?.ToString() ?? "unknown-client";
+}
+
+static FixedWindowRateLimiterOptions CreateFixedWindowOptions(
+    int permitLimit,
+    int windowSeconds)
+{
+    return new FixedWindowRateLimiterOptions
+    {
+        AutoReplenishment = true,
+        PermitLimit = permitLimit,
+        QueueLimit = 0,
+        Window = TimeSpan.FromSeconds(windowSeconds)
+    };
+}
 
 public partial class Program;

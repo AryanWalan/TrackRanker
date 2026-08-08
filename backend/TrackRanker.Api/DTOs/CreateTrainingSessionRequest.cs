@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using TrackRanker.Api.Models;
+using TrackRanker.Api.Validation;
 
 namespace TrackRanker.Api.DTOs;
 
@@ -16,6 +17,7 @@ public sealed class CreateTrainingSessionRequest
     public DateOnly? SessionDate { get; init; }
 
     [Required]
+    [NotWhiteSpace]
     [StringLength(1000)]
     public string Prescription { get; init; } = string.Empty;
 

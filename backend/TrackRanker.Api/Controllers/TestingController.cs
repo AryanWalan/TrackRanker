@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using TrackRanker.Api.Configuration;
 using TrackRanker.Api.Services;
@@ -6,6 +7,7 @@ using TrackRanker.Api.Services;
 namespace TrackRanker.Api.Controllers;
 
 [ApiController]
+[DisableRateLimiting]
 [Route("api/testing")]
 public sealed class TestingController : ControllerBase
 {

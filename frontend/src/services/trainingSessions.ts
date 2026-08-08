@@ -27,9 +27,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
-    let message = "The request could not be completed.";
+    let message = response.status === 429
+      ? "Too many requests. Please wait a moment and try again."
+      : "The request could not be completed.";
     try {
       const problem = await response.json() as {
+        error?: string;
         title?: string;
         detail?: string;
         errors?: Record<string, string[]>;
@@ -37,7 +40,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       const validationMessage = problem.errors
         ? Object.values(problem.errors).flat()[0]
         : undefined;
-      message = validationMessage ?? problem.detail ?? problem.title ?? message;
+      message = problem.error
+        ?? validationMessage
+        ?? problem.detail
+        ?? problem.title
+        ?? message;
     } catch {
       // Keep the safe generic message when the server did not return JSON.
     }

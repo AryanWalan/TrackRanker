@@ -43,6 +43,65 @@ public sealed class TrainingSessionServiceTests
     }
 
     [Fact]
+    public async Task CreateAsync_WithWhitespaceOnlyPrescription_ThrowsValidationException()
+    {
+        var repository = new FakeTrainingSessionRepository();
+        var service = new TrainingSessionService(repository);
+        var request = new CreateTrainingSessionRequest
+        {
+            SessionType = SessionType.Acceleration,
+            SessionDate = new DateOnly(2026, 8, 1),
+            Prescription = "   ",
+            IntendedIntensity = 90
+        };
+
+        await Assert.ThrowsAsync<ValidationException>(() =>
+            service.CreateAsync(request, TestContext.Current.CancellationToken));
+        Assert.Empty(repository.Sessions);
+    }
+
+    [Fact]
+    public async Task CreateAsync_TrimsTextAndPreservesValidSprintNotation()
+    {
+        var service = new TrainingSessionService(new FakeTrainingSessionRepository());
+        var request = new CreateTrainingSessionRequest
+        {
+            Title = "  Special endurance  ",
+            SessionType = SessionType.SpecialEndurance,
+            SessionDate = new DateOnly(2026, 8, 8),
+            Prescription = "  2 sets of 20m – 30m – 30m – 20m at 95%  ",
+            Purpose = "   ",
+            FocusCue = "  Stay relaxed through the final 50m.  ",
+            IntendedIntensity = 95
+        };
+
+        var response = await service.CreateAsync(
+            request,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal("Special endurance", response.Title);
+        Assert.Equal("2 sets of 20m – 30m – 30m – 20m at 95%", response.Prescription);
+        Assert.Null(response.Purpose);
+        Assert.Equal("Stay relaxed through the final 50m.", response.FocusCue);
+    }
+
+    [Fact]
+    public async Task CreateAsync_WithOversizedPrescription_ThrowsValidationException()
+    {
+        var service = new TrainingSessionService(new FakeTrainingSessionRepository());
+        var request = new CreateTrainingSessionRequest
+        {
+            SessionType = SessionType.Tempo,
+            SessionDate = new DateOnly(2026, 8, 8),
+            Prescription = new string('x', 1001),
+            IntendedIntensity = 70
+        };
+
+        await Assert.ThrowsAsync<ValidationException>(() =>
+            service.CreateAsync(request, TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
     public async Task GetByIdAsync_WhenSessionExists_ReturnsSession()
     {
         var existing = ExistingSession();

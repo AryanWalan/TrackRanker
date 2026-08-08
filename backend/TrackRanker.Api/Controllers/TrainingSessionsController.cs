@@ -1,11 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using MongoDB.Bson;
 using TrackRanker.Api.DTOs;
 using TrackRanker.Api.Services;
+using TrackRanker.Api.Security;
 
 namespace TrackRanker.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting(RateLimitPolicyNames.Api)]
 [Route("api/training-sessions")]
 public sealed class TrainingSessionsController : ControllerBase
 {
@@ -43,6 +46,7 @@ public sealed class TrainingSessionsController : ControllerBase
     }
 
     [HttpPost]
+    [EnableRateLimiting(RateLimitPolicyNames.Write)]
     public async Task<ActionResult<TrainingSessionResponse>> Create(
         CreateTrainingSessionRequest request,
         CancellationToken cancellationToken)
@@ -52,6 +56,7 @@ public sealed class TrainingSessionsController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [EnableRateLimiting(RateLimitPolicyNames.Write)]
     public async Task<ActionResult<TrainingSessionResponse>> Update(
         string id,
         UpdateTrainingSessionRequest request,
@@ -72,6 +77,7 @@ public sealed class TrainingSessionsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [EnableRateLimiting(RateLimitPolicyNames.Write)]
     public async Task<IActionResult> Delete(string id, CancellationToken cancellationToken)
     {
         if (!ObjectId.TryParse(id, out _))

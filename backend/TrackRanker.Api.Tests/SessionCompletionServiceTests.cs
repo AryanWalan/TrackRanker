@@ -73,6 +73,45 @@ public sealed class SessionCompletionServiceTests
     }
 
     [Fact]
+    public async Task CreateAsync_NormalisesWhitespaceOnlyOptionalEvidence()
+    {
+        var context = TestContextWithParent();
+        var request = new CreateSessionCompletionRequest
+        {
+            ActualIntensity = 8,
+            PerceivedDifficulty = 7,
+            RepetitionResults =
+            [
+                new RepetitionResultDto
+                {
+                    SetNumber = 1,
+                    RepetitionNumber = 1,
+                    DistanceMetres = 150,
+                    TimeSeconds = 17.5,
+                    Notes = "   "
+                }
+            ],
+            Reflection = new SessionReflectionDto
+            {
+                WentWell = "  Stayed relaxed through the final 50m.  ",
+                CoachFeedback = "   "
+            }
+        };
+
+        var result = await context.Service.CreateAsync(
+            context.Parent.Id,
+            request,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(SessionCompletionOutcome.Success, result.Outcome);
+        Assert.Null(result.Value?.RepetitionResults[0].Notes);
+        Assert.Equal(
+            "Stayed relaxed through the final 50m.",
+            result.Value?.Reflection.WentWell);
+        Assert.Null(result.Value?.Reflection.CoachFeedback);
+    }
+
+    [Fact]
     public async Task Create_WhenParentDoesNotExist_ReturnsNotFound()
     {
         var service = new SessionCompletionService(

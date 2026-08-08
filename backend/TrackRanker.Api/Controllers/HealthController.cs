@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using TrackRanker.Api.Contracts;
 
 namespace TrackRanker.Api.Controllers;
 
 [ApiController]
+[DisableRateLimiting]
 [Route("api/[controller]")]
 public sealed class HealthController : ControllerBase
 {
