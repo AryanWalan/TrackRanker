@@ -11,4 +11,6 @@ public sealed class MongoDbOptions
 
     [Required(AllowEmptyStrings = false)]
     public string DatabaseName { get; init; } = string.Empty;
+
+    public bool UseTransactions { get; init; } = true;
 }

@@ -5,7 +5,7 @@
 
 ## Decision
 
-TrackRanker will use MongoDB as its application database through the official MongoDB C#/.NET driver.
+TrackRanker will use MongoDB as its application database. As superseded in part by ADR 009, normal application CRUD uses Entity Framework Core through the official MongoDB EF Core provider; the official C#/.NET driver remains only for narrow administrative operations.
 
 ## Context and rationale
 
@@ -15,7 +15,7 @@ Sprint sessions combine stable identifying fields with flexible repetition struc
 
 - Session data can be read and written as a coherent aggregate.
 - Repetition and reflection structures can evolve incrementally.
-- The official driver integrates cleanly with .NET dependency injection and async APIs.
+- The official MongoDB EF Core provider integrates the document database with TrackRanker's required EF Core repository architecture and async APIs.
 - Local development has a small Docker Compose footprint.
 
 ## Risks and trade-offs

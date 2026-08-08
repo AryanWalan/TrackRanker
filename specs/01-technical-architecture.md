@@ -6,11 +6,11 @@ The frontend is a React and TypeScript single-page application built with Vite. 
 
 ## Backend architecture
 
-The backend is a .NET 10 ASP.NET Core Web API using controllers. Startup composition remains in `Program.cs`. Training-session and session-completion controllers depend on application services, which validate and map separate request/response DTOs to internal persistence models. Read-only confidence and progress controllers call dedicated services. `ProgressService` reads current completion evidence through the existing repository and deterministically calculates XP, TrackRank, process totals, and six achievement DTOs; no gamification state is persisted. Services depend on repository abstractions, and only MongoDB repositories contain database queries. Built-in OpenAPI generation supplies a document rendered through Scalar during development.
+The backend is a .NET 10 ASP.NET Core Web API using controllers. Startup composition remains in `Program.cs`. Training-session and session-completion controllers depend on application services, which validate and map separate request/response DTOs to internal persistence models. Read-only confidence and progress controllers call dedicated services. `ProgressService` reads current completion evidence through the existing repository and deterministically calculates XP, TrackRank, process totals, and six achievement DTOs; no gamification state is persisted. Services depend on repository abstractions, and scoped EF repositories perform normal CRUD through `TrackRankerDbContext` and the official MongoDB EF Core provider. Built-in OpenAPI generation supplies a document rendered through Scalar during development.
 
 ## MongoDB approach
 
-The official MongoDB .NET driver supplies `IMongoClient` and `IMongoDatabase` through dependency injection. Strongly typed, validated options hold connection and database settings. Planned training sessions are stored in `trainingSessions`; actual outcomes and reflections are stored separately in `sessionCompletions`, with a unique index on `TrainingSessionId`. Repository boundaries, validated request DTOs, and response mapping keep persistence details out of the API contract. Completion creation and the parent status update span two collections without a MongoDB transaction, so they are sequential rather than atomically committed.
+The official MongoDB EF Core provider configures `TrackRankerDbContext` from an injected `IMongoClient` and database name. Strongly typed, validated options hold connection, database, and transaction settings. Planned training sessions remain in `trainingSessions`; actual outcomes and reflections remain embedded in `sessionCompletions`, with BSON ObjectId-compatible string IDs and a unique index on `TrainingSessionId`. Repository boundaries, validated request DTOs, and response mapping keep persistence details out of the API contract. The direct MongoDB driver is limited to idempotent index creation and guarded E2E bulk cleanup, not ordinary CRUD. EF relational migrations are not used. Development disables automatic transactions for standalone MongoDB; completion creation and the parent status update therefore remain sequential rather than atomically committed across collections.
 
 ## Environment configuration
 
@@ -18,7 +18,7 @@ ASP.NET Core's configuration providers read hierarchical settings from JSON and 
 
 ## Testing approach
 
-Backend xUnit tests host the API in memory for the health contract and test training-session and completion application behaviour with fake repositories, avoiding a live database dependency. Frontend component tests mock the typed API layer and verify planned-session plus completion/reflection workflows. Both applications must build after their test suites pass.
+Backend xUnit tests host the API in memory for API contracts, test application behaviour with fake repositories, validate EF model metadata, and exercise repository behaviour with EF Core's in-memory provider, avoiding a live MongoDB dependency. Frontend component tests mock the typed API layer and verify planned-session plus completion/reflection workflows. Both applications must build after their test suites pass.
 
 ## Planned deployment architecture
 
@@ -28,8 +28,10 @@ The current plan is to deploy the compiled frontend to static hosting, the .NET 
 flowchart LR
     Athlete["Athlete browser"] --> Frontend["React + Vite frontend"]
     Frontend -->|"HTTPS /api"| API[".NET 10 Web API"]
-    API -->|"planned CRUD"| Sessions[("trainingSessions")]
-    API -->|"outcome + reflection"| Completions[("sessionCompletions")]
+    API --> Repositories["EF repositories"]
+    Repositories --> Context["TrackRankerDbContext"]
+    Context -->|"planned CRUD"| Sessions[("trainingSessions")]
+    Context -->|"outcome + reflection"| Completions[("sessionCompletions")]
     Completions -. "TrainingSessionId" .-> Sessions
     API -->|"GET confidence history"| Confidence["ConfidenceHistoryService"]
     Confidence -->|"read + join"| Sessions

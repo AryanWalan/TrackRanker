@@ -1,7 +1,10 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Scalar.AspNetCore;
 using TrackRanker.Api.Configuration;
+using TrackRanker.Api.Data;
+using TrackRanker.Api.Infrastructure;
 using TrackRanker.Api.Repositories;
 using TrackRanker.Api.Services;
 
@@ -42,9 +45,16 @@ builder.Services.AddSingleton<IMongoDatabase>(serviceProvider =>
     var options = serviceProvider.GetRequiredService<IOptions<MongoDbOptions>>().Value;
     return serviceProvider.GetRequiredService<IMongoClient>().GetDatabase(options.DatabaseName);
 });
-builder.Services.AddScoped<ITrainingSessionRepository, MongoTrainingSessionRepository>();
+builder.Services.AddDbContext<TrackRankerDbContext>((serviceProvider, options) =>
+{
+    var mongoOptions = serviceProvider.GetRequiredService<IOptions<MongoDbOptions>>().Value;
+    var client = serviceProvider.GetRequiredService<IMongoClient>();
+    options.UseMongoDB(client, mongoOptions.DatabaseName);
+});
+builder.Services.AddHostedService<SessionCompletionIndexInitializer>();
+builder.Services.AddScoped<ITrainingSessionRepository, EfTrainingSessionRepository>();
 builder.Services.AddScoped<ITrainingSessionService, TrainingSessionService>();
-builder.Services.AddSingleton<ISessionCompletionRepository, MongoSessionCompletionRepository>();
+builder.Services.AddScoped<ISessionCompletionRepository, EfSessionCompletionRepository>();
 builder.Services.AddScoped<ISessionCompletionService, SessionCompletionService>();
 builder.Services.AddScoped<IConfidenceHistoryService, ConfidenceHistoryService>();
 builder.Services.AddScoped<IProgressService, ProgressService>();

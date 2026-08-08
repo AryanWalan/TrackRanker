@@ -14,6 +14,8 @@ TrackRanker's Dashboard now gives first-time athletes a concise, sectioned journ
 
 TrackRanker also includes process-based XP, personal TrackRank levels, and six achievements derived from stored session completions. After a completion is saved, athletes receive immediate feedback for backend-derived XP, rank, and newly unlocked achievement changes. The Progress page makes the rules and process totals transparent, while the Dashboard keeps TrackRank and recent training after its core workflow guidance.
 
+Backend persistence now satisfies the assessment's Entity Framework Core basic requirement through the official MongoDB EF Core provider. MongoDB remains the NoSQL database, existing collections and BSON document shapes are retained, and normal repository CRUD flows through `TrackRankerDbContext`.
+
 Streamlined planned-session entry includes a Repeat session action and a Zustand-persisted unfinished draft. Session-list and Confidence filters also persist across navigation and refresh without storing server responses in client state. Completed-session reflection and evidence-based Confidence History remain available. Authentication, athlete profiles, leaderboards, athlete comparison, advanced analytics, and AI-generated encouragement are not implemented.
 
 ## TrackRank gamification
@@ -25,8 +27,8 @@ TrackRanker does not award XP for faster times, higher intensity, additional vol
 ## Technology stack
 
 - Frontend: React, TypeScript, Vite, React Router, Zustand, Vitest, React Testing Library
-- Backend: C# 14, .NET 10 Web API controllers, OpenAPI, Scalar, xUnit
-- Database: MongoDB with the official MongoDB .NET driver
+- Backend: C# 14, .NET 10, Entity Framework Core 10, Web API controllers, OpenAPI, Scalar, xUnit
+- Database: MongoDB with the official MongoDB EF Core Provider 10; the MongoDB .NET Driver is retained only for narrow administrative operations
 - Local infrastructure: MongoDB Windows service or Docker Compose
 
 ## Repository structure
@@ -35,7 +37,9 @@ TrackRanker does not award XP for faster times, higher intensity, additional vol
 backend/
   TrackRanker.Api/
     Controllers/
+    Data/
     DTOs/
+    Infrastructure/
     Models/
     Repositories/
     Services/
@@ -68,6 +72,8 @@ MongoDB is exposed at `mongodb://localhost:27017` and stores data in the named `
 
 On Windows, a locally installed MongoDB service listening on `mongodb://127.0.0.1:27017` can be used instead. Docker is not required for local development or E2E testing when that service is available.
 
+TrackRanker does not use relational EF migrations. `TrackRankerDbContext` maps directly to the existing `trainingSessions` and `sessionCompletions` MongoDB collections. Startup idempotently ensures the unique completion index through a narrowly scoped driver-based administrative component.
+
 ## Backend setup
 
 ```bash
@@ -80,7 +86,7 @@ The development API runs at `http://localhost:5000` by default. Its health endpo
 
 Scalar API documentation is available in development at `http://localhost:5000/scalar/v1`.
 
-To use environment variables instead of the safe development defaults, copy `backend/.env.example` into the configuration mechanism used by your shell or development environment. The application does not automatically load `.env` files.
+To use environment variables instead of the safe development defaults, copy `backend/.env.example` into the configuration mechanism used by your shell or development environment. The application does not automatically load `.env` files. Local Development sets `MongoDb__UseTransactions=false` for standalone MongoDB. Transaction-capable replica-set or managed deployments can set it to `true`; disabling transactions means the completion and parent-status writes are sequential rather than cross-collection atomic.
 
 ## Frontend setup
 
@@ -103,7 +109,7 @@ npm test
 npm run build
 ```
 
-Backend service tests use fake repositories, and frontend tests mock API calls. Neither automated suite requires a live MongoDB instance. Tests cover session workflows, confidence history, and deterministic progress calculations including XP, TrackRank boundaries, and achievements.
+Backend service tests use fake repositories, repository tests use EF Core's deterministic in-memory provider, and frontend tests mock API calls. Neither automated suite requires a live MongoDB instance. Tests cover EF mappings and repository CRUD, session workflows, confidence history, and deterministic progress calculations including XP, TrackRank boundaries, and achievements.
 
 The testing layers have distinct responsibilities:
 
@@ -151,11 +157,16 @@ Each scenario calls the guarded `POST /api/testing/reset` endpoint and clears on
 | --- | --- | --- |
 | `MongoDb__ConnectionString` | `mongodb://localhost:27017` | MongoDB server connection |
 | `MongoDb__DatabaseName` | `trackranker` | MongoDB database name |
+| `MongoDb__UseTransactions` | `false` | Disables EF automatic transactions for local standalone MongoDB; use `true` only with a transaction-capable deployment |
 | `E2E__Enabled` | `false` | Enables the guarded E2E reset route; only valid with an `_e2e` database |
 | `Frontend__AllowedOrigin` | `http://localhost:5173` | Allowed development CORS origin |
 | `VITE_API_BASE_URL` | `http://localhost:5000` | Frontend API base URL |
 
 Production deployments must provide all backend values explicitly; no credentials are committed.
+
+## Basic requirements compliance
+
+Entity Framework Core is implemented as the real application persistence layer through the official MongoDB EF Core provider. Scoped repositories use `TrackRankerDbContext` for normal CRUD while MongoDB remains the NoSQL database. Direct driver access is isolated to unsupported administrative work: unique-index creation and the guarded E2E bulk reset. This is a basic-requirement compliance milestone, not an additional advanced requirement.
 
 ## Advanced Requirements Selected
 

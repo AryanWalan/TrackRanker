@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 using TrackRanker.Api.Services;
 using Xunit;
 
@@ -58,6 +59,7 @@ public sealed class TestingEndpointTests : IClassFixture<WebApplicationFactory<P
             builder.UseSetting("MongoDb:DatabaseName", "trackranker_e2e");
             builder.ConfigureServices(services =>
             {
+                services.RemoveAll<IHostedService>();
                 services.RemoveAll<ILoggerProvider>();
                 services.RemoveAll<IE2eDataResetService>();
                 services.AddSingleton<IE2eDataResetService>(service);

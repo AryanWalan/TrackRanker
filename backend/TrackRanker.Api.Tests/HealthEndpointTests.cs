@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TrackRanker.Api.Contracts;
 using Xunit;
@@ -17,7 +18,11 @@ public sealed class HealthEndpointTests : IClassFixture<WebApplicationFactory<Pr
         _client = factory.WithWebHostBuilder(builder =>
         {
             builder.UseSetting("Environment", "Development");
-            builder.ConfigureServices(services => services.RemoveAll<ILoggerProvider>());
+            builder.ConfigureServices(services =>
+            {
+                services.RemoveAll<IHostedService>();
+                services.RemoveAll<ILoggerProvider>();
+            });
         }).CreateClient();
     }
 
