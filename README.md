@@ -181,7 +181,7 @@ Entity Framework Core is implemented as the real application persistence layer t
    - Persists unfinished new-session drafts plus Sessions and Confidence filter preferences while keeping API data out of the store.
    - Status: **implemented**.
 3. **Cypress End-to-End Testing**
-   - Verifies onboarding and navigation, session creation, completion and reflection, confidence evidence, TrackRank progress, and Repeat Session through the real frontend, API, and isolated MongoDB database.
+   - Verifies onboarding and navigation, session creation, completion and reflection, confidence evidence, TrackRank progress, and Repeat Session through real browser → frontend → API → MongoDB workflows. Repeated full-suite runs use the dedicated `trackranker_e2e` database, and automated data reset is available only through the guarded E2E mode.
    - Status: **implemented**.
 
 ### Dependency security note
