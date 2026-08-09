@@ -10,7 +10,7 @@ Competitive sprint athletes working with a coach, initially focused on the 100m,
 
 ## Current milestone
 
-TrackRanker's Dashboard now gives first-time athletes a concise, sectioned journey from the product introduction and three-step workflow through training actions, TrackRank progress, recent sessions, and secondary system status. Training history is distinguished from logging a new session, the unused Profile navigation has been removed, and Confidence History presents previous reflections as readable evidence.
+TrackRanker's Dashboard now gives first-time athletes a concise, sectioned journey from the product introduction and three-step workflow through training actions, TrackRank progress, recent sessions, and secondary system status. Training History provides persistent quick filters, scan-friendly prescriptions, and clear actions for planned and completed sessions; the unused Profile navigation remains removed, and Confidence History presents previous reflections as readable evidence.
 
 TrackRanker also includes process-based XP, personal TrackRank levels, and six achievements derived from stored session completions. After a completion is saved, athletes receive immediate feedback for backend-derived XP, rank, and newly unlocked achievement changes. The Progress page makes the rules and process totals transparent, while the Dashboard keeps TrackRank and recent training after its core workflow guidance.
 

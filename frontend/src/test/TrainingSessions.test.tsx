@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
@@ -105,21 +105,38 @@ describe("training sessions", () => {
     api.getSessionCompletion.mockRejectedValue(new Error("No completion"));
   });
 
+  it("renders the training-history hierarchy and creation action", async () => {
+    renderRoute("/sessions");
+
+    await screen.findByRole("heading", { name: "No sessions logged yet" });
+    expect(screen.getByRole("heading", { level: 1, name: "Training history" }))
+      .toBeInTheDocument();
+    expect(screen.getByText(
+      "View, repeat, and manage the sessions you have already logged.",
+    )).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: "Log a session" })[0])
+      .toHaveAttribute("href", "/sessions/new");
+    expect(screen.queryByRole("link", { name: "Profile" })).not.toBeInTheDocument();
+  });
+
   it("renders sessions returned by the API", async () => {
     api.getTrainingSessions.mockResolvedValue([session]);
     renderRoute("/sessions");
 
     expect(await screen.findByRole("heading", { name: "Speed endurance" })).toBeInTheDocument();
     expect(screen.getByText("3 x 150m @ 90%")).toBeInTheDocument();
-    expect(screen.getByText("Intended intensity", { exact: false })).toHaveTextContent("90%");
+    expect(screen.getByText("Planned intensity").nextElementSibling).toHaveTextContent("90%");
+    expect(api.getSessionCompletion).not.toHaveBeenCalled();
   });
 
   it("renders the empty state", async () => {
     api.getTrainingSessions.mockResolvedValue([]);
     renderRoute("/sessions");
 
-    expect(await screen.findByRole("heading", { name: "No sessions logged yet." })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "No sessions logged yet" })).toBeInTheDocument();
     expect(screen.getByText(/Log your first training session/)).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: "Log a session" })[1])
+      .toHaveAttribute("href", "/sessions/new");
   });
 
   it("shows all sessions with default filters", async () => {
@@ -143,12 +160,43 @@ describe("training sessions", () => {
     expect(screen.queryByRole("heading", { name: "Speed endurance" })).not.toBeInTheDocument();
   });
 
-  it("filters sessions by status", async () => {
+  it("shows quick status choices with an explicit selected state", async () => {
+    api.getTrainingSessions.mockResolvedValue(filterSessions);
+    renderRoute("/sessions");
+
+    expect(await screen.findByRole("button", { name: "All" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(screen.getByRole("button", { name: "Planned" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+    expect(screen.getByRole("button", { name: "Completed" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+  });
+
+  it("filters sessions by Planned status through the Zustand-backed control", async () => {
     const user = userEvent.setup();
     api.getTrainingSessions.mockResolvedValue(filterSessions);
     renderRoute("/sessions");
 
-    await user.selectOptions(await screen.findByLabelText("Status"), "Completed");
+    await user.click(await screen.findByRole("button", { name: "Planned" }));
+
+    expect(screen.getByText("1 session")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Speed endurance" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Completed tempo" })).not.toBeInTheDocument();
+    expect(useTrackRankerStore.getState().sessionStatusFilter).toBe("Planned");
+  });
+
+  it("filters sessions by Completed status", async () => {
+    const user = userEvent.setup();
+    api.getTrainingSessions.mockResolvedValue(filterSessions);
+    renderRoute("/sessions");
+
+    await user.click(await screen.findByRole("button", { name: "Completed" }));
 
     expect(screen.getByText("2 sessions")).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Speed endurance" })).not.toBeInTheDocument();
@@ -160,7 +208,7 @@ describe("training sessions", () => {
     renderRoute("/sessions");
 
     await user.selectOptions(await screen.findByLabelText("Type"), "SpeedEndurance");
-    await user.selectOptions(screen.getByLabelText("Status"), "Completed");
+    await user.click(screen.getByRole("button", { name: "Completed" }));
 
     expect(screen.getByText("1 session")).toBeInTheDocument();
     expect(
@@ -175,12 +223,13 @@ describe("training sessions", () => {
     renderRoute("/sessions");
 
     await user.selectOptions(await screen.findByLabelText("Type"), "Tempo");
-    await user.selectOptions(screen.getByLabelText("Status"), "Planned");
+    await user.click(screen.getByRole("button", { name: "Planned" }));
 
     expect(
-      screen.getByRole("heading", { name: "No sessions match these filters." }),
+      screen.getByRole("heading", { name: "No sessions match these filters" }),
     ).toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "No sessions logged yet." })).not.toBeInTheDocument();
+    expect(screen.getByText("Try changing the session type or status.")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "No sessions logged yet" })).not.toBeInTheDocument();
     const clearButtons = screen.getAllByRole("button", { name: "Clear filters" });
     await user.click(clearButtons[clearButtons.length - 1]);
 
@@ -193,11 +242,52 @@ describe("training sessions", () => {
     renderRoute("/sessions");
 
     await user.selectOptions(await screen.findByLabelText("Type"), "SpeedEndurance");
-    await user.click(screen.getByRole("link", { name: "Speed endurance" }));
+    await user.click(await screen.findByRole("link", { name: /View session:/ }));
     await user.click(await screen.findByRole("link", { name: /Back to Sessions/ }));
 
     expect(await screen.findByLabelText("Type")).toHaveValue("SpeedEndurance");
     expect(screen.queryByRole("heading", { name: "Completed tempo" })).not.toBeInTheDocument();
+  });
+
+  it("shows Clear filters only after a filter is active", async () => {
+    const user = userEvent.setup();
+    api.getTrainingSessions.mockResolvedValue(filterSessions);
+    renderRoute("/sessions");
+
+    await screen.findByText("3 sessions");
+    expect(screen.queryByRole("button", { name: "Clear filters" })).not.toBeInTheDocument();
+
+    await user.selectOptions(screen.getByLabelText("Type"), "Tempo");
+    expect(screen.getByRole("button", { name: "Clear filters" })).toBeInTheDocument();
+  });
+
+  it("provides status-specific actions using existing routes", async () => {
+    const completedCardSession = {
+      ...completedSource,
+      id: "507f1f77bcf86cd799439014",
+    };
+    api.getTrainingSessions.mockResolvedValue([session, completedCardSession]);
+    renderRoute("/sessions");
+
+    const plannedCard = (await screen.findByRole("heading", { name: session.title }))
+      .closest("article");
+    const completedCard = screen.getByRole("heading", { name: completedCardSession.title })
+      .closest("article");
+    expect(plannedCard).not.toBeNull();
+    expect(completedCard).not.toBeNull();
+
+    expect(within(plannedCard!).getByRole("link", { name: `Complete session: ${session.title}` }))
+      .toHaveAttribute("href", `/sessions/${session.id}/complete`);
+    expect(within(plannedCard!).getByRole("link", { name: `Edit session: ${session.title}` }))
+      .toHaveAttribute("href", `/sessions/${session.id}/edit`);
+    expect(within(completedCard!).getByRole("link", {
+      name: `View session: ${completedCardSession.title}`,
+    }))
+      .toHaveAttribute("href", `/sessions/${completedCardSession.id}`);
+    expect(within(completedCard!).getByRole("link", {
+      name: `Repeat session: ${completedCardSession.title}`,
+    }))
+      .toHaveAttribute("href", `/sessions/new?copy=${completedCardSession.id}`);
   });
 
   it("shows the essential fields first on the create form", () => {

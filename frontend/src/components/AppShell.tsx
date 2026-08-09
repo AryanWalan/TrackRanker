@@ -9,6 +9,11 @@ const navigation = [
 
 export function AppShell() {
   const { pathname } = useLocation();
+  const contentClassName = pathname === "/"
+    ? "page-content page-content--dashboard"
+    : pathname === "/sessions"
+      ? "page-content page-content--sessions"
+      : "page-content";
 
   return (
     <div className="app-shell">
@@ -37,7 +42,7 @@ export function AppShell() {
           </ul>
         </nav>
       </header>
-      <main className={pathname === "/" ? "page-content page-content--dashboard" : "page-content"}>
+      <main className={contentClassName}>
         <Outlet />
       </main>
       <footer>
